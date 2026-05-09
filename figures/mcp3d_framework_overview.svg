@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="920" viewBox="0 0 1600 920">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ea580c"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { font: 700 34px Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .subtitle { font: 500 18px Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; fill: #475569; }
+      .panel-title { font: 700 20px Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .section-title { font: 700 17px Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .label { font: 700 14px Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; fill: #0f172a; }
+      .small { font: 12px Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; fill: #334155; }
+      .tiny { font: 11px Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; fill: #475569; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 14; }
+      .outer { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.8; rx: 18; }
+      .input { fill: #eff6ff; stroke: #60a5fa; }
+      .feature { fill: #ecfdf5; stroke: #34d399; }
+      .core { fill: #faf5ff; stroke: #a855f7; stroke-width: 2.4; }
+      .compact { fill: #fff7ed; stroke: #fb923c; }
+      .boundary { fill: #fff1f2; stroke: #fb7185; }
+      .output { fill: #f0f9ff; stroke: #38bdf8; }
+      .diag { fill: #f1f5f9; stroke: #94a3b8; }
+      .dash { stroke-dasharray: 7 5; }
+      .arrow { stroke: #334155; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .arrow-blue { stroke: #2563eb; stroke-width: 2.4; fill: none; marker-end: url(#arrowBlue); }
+      .arrow-orange { stroke: #ea580c; stroke-width: 2.4; fill: none; marker-end: url(#arrowOrange); }
+      .axis { stroke: #cbd5e1; stroke-width: 1.2; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="920"/>
+  <text class="title" x="800" y="44" text-anchor="middle">MCP-3D: Geometry-Aware Multi-Memory TTA</text>
+  <text class="subtitle" x="800" y="76" text-anchor="middle">Paper-style pipeline: inputs → core 2×3 memory matrix → prediction and online update</text>
+
+  <rect class="outer input" x="40" y="115" width="300" height="660"/>
+  <text class="panel-title" x="190" y="150" text-anchor="middle">INPUTS 输入</text>
+
+  <rect class="box input" x="70" y="185" width="240" height="150"/>
+  <text class="section-title" x="190" y="213" text-anchor="middle">Offline Text Input</text>
+  <text class="small" x="190" y="239" text-anchor="middle">Class names</text>
+  <text class="small" x="190" y="259" text-anchor="middle">+ DeepSeek paraphrases</text>
+  <line class="axis" x1="95" y1="277" x2="285" y2="277"/>
+  <text class="tiny" x="190" y="300" text-anchor="middle">build once before test-time</text>
+  <text class="tiny" x="190" y="318" text-anchor="middle">用于构建文本类别锚点</text>
+
+  <rect class="box feature" x="70" y="425" width="240" height="150"/>
+  <text class="section-title" x="190" y="453" text-anchor="middle">Online Test Input</text>
+  <text class="small" x="190" y="481" text-anchor="middle">Corrupted point cloud Xₜ</text>
+  <text class="small" x="190" y="501" text-anchor="middle">rotation / noise / dropout</text>
+  <line class="axis" x1="95" y1="519" x2="285" y2="519"/>
+  <text class="tiny" x="190" y="542" text-anchor="middle">streaming and unlabeled</text>
+  <text class="tiny" x="190" y="560" text-anchor="middle">测试样本逐个到达，无标签</text>
+
+  <rect class="outer" x="375" y="115" width="210" height="660"/>
+  <text class="panel-title" x="480" y="150" text-anchor="middle">ENCODERS 编码</text>
+
+  <rect class="box input" x="400" y="190" width="160" height="135"/>
+  <text class="label" x="480" y="218" text-anchor="middle">Text Encoder</text>
+  <text class="small" x="480" y="245" text-anchor="middle">vMF MAP</text>
+  <text class="tiny" x="480" y="265" text-anchor="middle">von Mises-Fisher</text>
+  <text class="tiny" x="480" y="283" text-anchor="middle">Maximum A Posteriori</text>
+  <text class="small" x="480" y="306" text-anchor="middle">Aᵀ text anchors</text>
+
+  <rect class="box feature" x="400" y="425" width="160" height="150"/>
+  <text class="label" x="480" y="453" text-anchor="middle">3D-VLM</text>
+  <text class="small" x="480" y="480" text-anchor="middle">3D encoder</text>
+  <text class="tiny" x="480" y="500" text-anchor="middle">3D Vision-Language Model</text>
+  <line class="axis" x1="422" y1="517" x2="538" y2="517"/>
+  <text class="small" x="480" y="540" text-anchor="middle">hᵍ, hˡ, p</text>
+  <text class="tiny" x="480" y="558" text-anchor="middle">global / local / prob.</text>
+
+  <rect class="outer core" x="625" y="115" width="520" height="660"/>
+  <text class="panel-title" x="885" y="150" text-anchor="middle">CORE: 2×3 MULTI-MEMORY MATRIX</text>
+  <text class="tiny" x="885" y="173" text-anchor="middle">核心：表征轴 global/local × 功能轴 confidence/compactness/boundary</text>
+
+  <rect class="box input" x="690" y="195" width="390" height="70"/>
+  <text class="label" x="885" y="221" text-anchor="middle">Text Anchor Bank Aᵀ</text>
+  <text class="small" x="885" y="244" text-anchor="middle">provides semantic class prototypes for text matching</text>
+
+  <rect class="box feature" x="690" y="285" width="390" height="70"/>
+  <text class="label" x="885" y="311" text-anchor="middle">Feature Stream from 3D-VLM</text>
+  <text class="small" x="885" y="334" text-anchor="middle">global feature hᵍ, local patch features hˡ, entropy H(p)</text>
+
+  <rect class="box core" x="665" y="390" width="440" height="260"/>
+  <text class="label" x="782" y="415" text-anchor="middle">Confidence</text>
+  <text class="label" x="907" y="415" text-anchor="middle">Compactness</text>
+  <text class="label" x="1032" y="415" text-anchor="middle">Boundary</text>
+  <text class="tiny" x="700" y="455" text-anchor="middle" transform="rotate(-90 700 455)">Global</text>
+  <text class="tiny" x="700" y="575" text-anchor="middle" transform="rotate(-90 700 575)">Local</text>
+
+  <rect class="box feature" x="725" y="430" width="115" height="85"/>
+  <text class="label" x="782" y="455" text-anchor="middle">global_conf</text>
+  <text class="tiny" x="782" y="479" text-anchor="middle">low entropy</text>
+  <text class="tiny" x="782" y="497" text-anchor="middle">whole shape</text>
+
+  <rect class="box compact" x="850" y="430" width="115" height="85"/>
+  <text class="label" x="907" y="455" text-anchor="middle">global_comp</text>
+  <text class="tiny" x="907" y="476" text-anchor="middle">Ω small</text>
+  <text class="tiny" x="907" y="494" text-anchor="middle">ICP-CD</text>
+
+  <rect class="box boundary" x="975" y="430" width="115" height="85"/>
+  <text class="label" x="1032" y="455" text-anchor="middle">global_bnd</text>
+  <text class="tiny" x="1032" y="479" text-anchor="middle">mid entropy</text>
+  <text class="tiny" x="1032" y="497" text-anchor="middle">soft labels</text>
+
+  <rect class="box feature" x="725" y="535" width="115" height="85"/>
+  <text class="label" x="782" y="560" text-anchor="middle">local_conf</text>
+  <text class="tiny" x="782" y="584" text-anchor="middle">patch feature</text>
+  <text class="tiny" x="782" y="602" text-anchor="middle">low entropy</text>
+
+  <rect class="box compact" x="850" y="535" width="115" height="85"/>
+  <text class="label" x="907" y="560" text-anchor="middle">local_comp</text>
+  <text class="tiny" x="907" y="584" text-anchor="middle">patch ICP-CD</text>
+  <text class="tiny" x="907" y="602" text-anchor="middle">geometry-aware</text>
+
+  <rect class="box boundary dash" x="975" y="535" width="115" height="85"/>
+  <text class="label" x="1032" y="560" text-anchor="middle">local_bnd</text>
+  <text class="tiny" x="1032" y="584" text-anchor="middle">optional</text>
+  <text class="tiny" x="1032" y="602" text-anchor="middle">ablation</text>
+
+  <rect class="box compact" x="690" y="675" width="390" height="68"/>
+  <text class="label" x="885" y="700" text-anchor="middle">C1 Geometry Selector inside Compactness Column</text>
+  <text class="small" x="885" y="724" text-anchor="middle">PCA pre-align → rigid ICP (R,t, no scale) → Chamfer Distance → Ω</text>
+
+  <rect class="outer output" x="1205" y="115" width="355" height="660"/>
+  <text class="panel-title" x="1382" y="150" text-anchor="middle">OUTPUTS 输出</text>
+
+  <rect class="box output" x="1235" y="195" width="295" height="170"/>
+  <text class="section-title" x="1382" y="223" text-anchor="middle">Multi-source Fusion</text>
+  <text class="small" x="1382" y="251" text-anchor="middle">text logits from Aᵀ</text>
+  <text class="small" x="1382" y="274" text-anchor="middle">+ positive memory logits</text>
+  <text class="small" x="1382" y="297" text-anchor="middle">− boundary suppression</text>
+  <line class="axis" x1="1260" y1="316" x2="1505" y2="316"/>
+  <text class="label" x="1382" y="343" text-anchor="middle">final logits l_final</text>
+
+  <rect class="box output" x="1235" y="405" width="295" height="82"/>
+  <text class="section-title" x="1382" y="435" text-anchor="middle">Prediction</text>
+  <text class="label" x="1382" y="464" text-anchor="middle">ŷₜ = argmax(l_final)</text>
+
+  <rect class="box feature" x="1235" y="535" width="295" height="112"/>
+  <text class="section-title" x="1382" y="563" text-anchor="middle">Online Update</text>
+  <text class="small" x="1382" y="590" text-anchor="middle">write selected sample back to memory</text>
+  <text class="tiny" x="1382" y="614" text-anchor="middle">confidence: low entropy</text>
+  <text class="tiny" x="1382" y="632" text-anchor="middle">compactness: small Ω, fallback if ICP fails</text>
+
+  <rect class="box diag dash" x="1235" y="680" width="295" height="65"/>
+  <text class="section-title" x="1382" y="706" text-anchor="middle">Offline Diagnosis</text>
+  <text class="tiny" x="1382" y="729" text-anchor="middle">C2: Φ(c) vs. accuracy, Pearson r</text>
+
+  <line class="arrow-blue" x1="310" y1="260" x2="400" y2="260"/>
+  <line class="arrow" x1="560" y1="260" x2="690" y2="230"/>
+  <line class="arrow" x1="1080" y1="230" x2="1235" y2="250"/>
+
+  <line class="arrow-blue" x1="310" y1="500" x2="400" y2="500"/>
+  <line class="arrow" x1="560" y1="500" x2="665" y2="500"/>
+  <line class="arrow" x1="885" y1="355" x2="885" y2="390"/>
+  <line class="arrow-orange" x1="885" y1="675" x2="907" y2="620"/>
+  <line class="arrow" x1="1105" y1="520" x2="1235" y2="288"/>
+
+  <line class="arrow" x1="1382" y1="365" x2="1382" y2="405"/>
+  <line class="arrow" x1="1382" y1="487" x2="1382" y2="535"/>
+  <path class="arrow dash" d="M 1235 592 C 1165 592, 1165 745, 1040 745 C 960 745, 900 745, 885 743"/>
+  <line class="arrow dash" x1="1382" y1="647" x2="1382" y2="680"/>
+
+  <rect class="box" x="40" y="815" width="1520" height="65"/>
+  <text class="small" x="62" y="840">Acronyms: TTA = Test-Time Adaptation; 3D-VLM = 3D Vision-Language Model; vMF = von Mises-Fisher; MAP = Maximum A Posteriori.</text>
+  <text class="small" x="62" y="862">ICP = Iterative Closest Point; CD = Chamfer Distance. The central 2×3 matrix is the main method; text anchor and diagnosis are supporting branches.</text>
+</svg>

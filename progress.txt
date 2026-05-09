@@ -1,0 +1,182 @@
+================================================================================
+MCP-3D Project Progress Tracker
+================================================================================
+Plan: /root/.windsurf/plans/mcp3d-logic-audit-and-revised-plan-f3c00d.md
+Target: AAAI 2027 (W1-W16) -> CVPR 2027 (W17-W28)
+Compute: 2x T4 (16GB each), CUDA 11.6
+Backbone: OpenShape PointBERT-vitg14-rgb (primary), ULIP-2 (CVPR phase)
+================================================================================
+
+LEGEND:
+  [ ] = pending
+  [~] = in progress
+  [x] = completed
+  [!] = blocked / risk-gate triggered
+  [?] = needs decision
+
+================================================================================
+PHASE A: AAAI 2027 (W1-W16)
+================================================================================
+
+------ W1: Environment + Reproduction Setup ------
+[ ] env: setup_env.sh successfully runs (PyTorch 1.12 + CUDA 11.6 + dassl + pytorch3d + chamferdist + open3d)
+[ ] data: ModelNet-C downloaded and verified
+[ ] data: ScanObjectNN-C downloaded and verified
+[ ] data: ModelNet40 (clean) downloaded
+[ ] data: ScanObjectNN (clean) downloaded
+[ ] weights: OpenShape PointBERT-vitg14-rgb loaded successfully on T4
+[ ] weights: CLIP-ViT-bigG-14-laion2B downloaded
+[ ] paraphrase: DeepSeek API key configured, sandbox call successful
+RISK_GATE F1: T4 16GB can load OpenShape + CLIP-ViT-bigG14 simultaneously
+  - if FAIL -> downgrade to PointBERT-vitb16 or ULIP-2 base; enable feature pre-encoding pipeline
+
+------ W2: Point-Cache Reproduction ------
+[ ] zero-shot baseline: OpenShape ModelNet-C 7 corruptions L2 reproduced
+[ ] hierarchical cache baseline: numbers within 1pp of paper
+[ ] global cache baseline: numbers within 1pp of paper
+RISK_GATE R1: reproduction error >2pp -> 1 week debug; if persistent, fork official code unchanged
+
+------ W2.5: Probe Experiments (3-4 days, MANDATORY GATE) ------
+[ ] P1: rotation robustness probe (5 angles x OpenShape x 100 samples)
+    -> if cos_sim > 0.95 -> C1 RE-LOCATE: drop "pose-shape disentanglement" framing
+[ ] P2: 3D compactness-perf correlation quick measurement (1 backbone x 7 corruptions)
+    -> if |r_3D - r_2D| < 0.05 -> C2 PIVOT: focus on corruption-specificity narrative
+[ ] P3: T4 memory feasibility full check (model + multi-view V=32)
+    -> if OOM -> downgrade backbone or pre-encode features
+[ ] P4: ICP residual distribution statistics (1000 sample pairs across corruptions)
+    -> derive 95-th percentile threshold for failure detection
+RISK_GATE R-PROBE: any of P1/P2 fails -> trigger contingency matrix in plan section "W2.5 emergency response"
+
+------ W3: vMF Text Anchor + DeepSeek Paraphrase ------
+[ ] DeepSeek API: paraphrase generation for ModelNet-40 (40 classes)
+[ ] DeepSeek API: paraphrase generation for ScanObjectNN-15 (15 classes)
+[ ] DeepSeek API: paraphrase generation for OmniObject3D-216 (216 classes)
+[ ] DeepSeek API: paraphrase generation for Objaverse-LVIS-1156 (1156 classes)
+[ ] vMF MAP anchor module implemented (closed-form: normalize(kappa0*z_bar + kappa_hat*m_c))
+[ ] BayesMM text module reproduction started (D3 decision: parallel implementation)
+RISK_GATE R2: vMF vs Gaussian numerical difference <0.1pp -> demote to appendix
+
+------ W3.5-W4: 3D Naive Baseline Implementation ------
+[ ] 3D-MCP: naive port of MCP entropy/align/negative caches to 3D pipeline
+[ ] 3D-TDA: single positive cache baseline on 3D
+[ ] 3D-TPT: prompt tuning baseline on 3D
+[ ] all 3 baselines verified on Uni3D ModelNet-C rotate_2
+
+------ W4.5-W5: ICP+CD Module + R3 Critical Gate ------
+[ ] PCA principal axis pre-alignment implemented
+[ ] ICP fine-registration (pytorch3d.ops.iterative_closest_point) integrated
+[ ] Chamfer distance batched computation
+[ ] ICP failure fallback mechanism (using P4 threshold)
+[ ] z-score running statistics for heterogeneous distance fusion
+[ ] omega scan {0, 0.3, 0.5, 0.7, 1.0} on rotate_2 setting
+RISK_GATE R3 CRITICAL: ICP-CD gain on rotate <0.5pp -> trigger Plan B-Core (PCA-only fallback, drop ICP)
+
+------ W6-W7: Multi-Memory + Main-1 ------
+[ ] 6-cell 2x3 memory matrix integrated
+[ ] multi-source logits fusion (zeta1/zeta2/zeta3)
+[ ] Main-1: ModelNet-C 7 corruptions x 3 severity levels = 21 settings on OpenShape
+[ ] Main-1 numbers vs Point-Cache baseline tabulated
+RISK_GATE R4: overall gain <1pp -> revisit omega adaptive scheme or trigger downgrade
+
+------ W8: Main-2 + Clean Control ------
+[ ] Main-2: ScanObjectNN-C 7 corruptions x 3 severity levels = 21 settings
+[ ] Clean control: ModelNet-40 clean accuracy
+[ ] Clean control: ScanObjectNN clean accuracy
+RISK_GATE R-CLEAN: clean accuracy degraded >0.5pp -> investigate boundary memory tuning
+
+------ W9: Compactness Diagnosis (C2) ------
+[ ] 3D compactness Phi(c) measured on 21 settings full
+[ ] Pearson r computed per corruption type
+[ ] Comparison vs MCP paper's reported 2D r values (D5 option A)
+[ ] Fig.2: compactness-performance scatter plot (7 subplots)
+[ ] N+1 writing: dropout failure mechanism discussion
+[ ] N+3 writing: offline diagnosis disclaimer
+RISK_GATE R5: 3D vs 2D r difference <0.05 -> pivot to corruption-specificity story
+
+------ W10: Ablations A1 + A2 ------
+[ ] A1: 6-cell leave-one-out ablation (E+4 upgraded version)
+[ ] A2: omega scan x 7 corruptions full
+[ ] A2: ICP success rate per corruption (E+4 methodology)
+[ ] A2: LogSumExp vs z-score comparison
+[ ] A2: cross-class ICP-CD ROC analysis (E+2)
+[ ] Method section drafting started
+
+------ W11: Ablations A4 + A6 + Multi-Seed ------
+[ ] A4: text anchor 4-way comparison (single template / multi template / LLM avg / vMF MAP / Gaussian MAP)
+[ ] A6: efficiency analysis (inference time, memory, ICP fraction)
+[ ] E+5: 3 random seeds x main experiments + paired t-test significance
+
+------ W12: BayesMM + Failure Case Figure ------
+[ ] BayesMM official code released? (if yes: run; if no: complete self-impl B+2)
+[ ] BayesMM full numbers
+[ ] Fig.1: failure case "chair to table rescue" intro hook (G1)
+[ ] Intro + Related Work drafting
+
+------ W13-W16: Paper Writing ------
+[ ] W13: full draft v1 (7 pages + 5 figures + 5 tables)
+[ ] W14: internal review round 1, number backfill
+[ ] W15: internal review round 2, rebuttal rehearsal, code identity scrub (F3)
+[ ] W16: final revision, AAAI submission
+
+================================================================================
+PHASE B: CVPR 2027 (W17-W28)
+================================================================================
+
+------ W17-W18: Cross-Backbone (A8) ------
+[ ] ULIP-2 backbone main experiments
+[ ] cross-backbone consistency table
+
+------ W19: Sim2Real-SONN ------
+[ ] Sim2Real-SONN main experiments
+
+------ W20: Objaverse-LVIS ------
+[ ] Open-vocabulary long-tail validation
+
+------ W21: Residual Refinement (MCP-3D++) ------
+[ ] residual modules with align loss weight 0.3
+[ ] A5 ablation with three-narrative contingency (E+3)
+
+------ W22: Per-Corruption Heatmap ------
+[ ] A7: 21 corruptions x 6 cells gain heatmap
+[ ] Fig.5 generation
+
+------ W23: Theory Reinforcement ------
+[ ] Proposition 1 full proof (vMF concentration -> Phi monotonicity, N+8)
+[ ] Lemma 1+2 full proof (ICP-CD complementarity, N+7)
+[ ] AAAI feedback integration
+
+------ W24: vMF Numerical Simulation ------
+[ ] D1 simulation: d in {64, 128, 256, 512, 768} angular distance
+[ ] Appendix A finalization
+
+------ W25: ImageNet-C 2D Compactness (D5 option B) ------
+[ ] MCP reproduction on ImageNet-100 subset
+[ ] strict 2D vs 3D compactness comparison (if time permits)
+
+------ W26-W28: CVPR Final ------
+[ ] W26: full CVPR draft (8 pages + 10+ pages appendix)
+[ ] W27: internal review + simulated rebuttal
+[ ] W28: final revision + project page + code release + CVPR submission
+
+================================================================================
+DECISION LOG (locked)
+================================================================================
+[2026-05-08] D1=A: probe experiments are mandatory gates
+[2026-05-08] D2=A: 3D-MCP/TDA/TPT naive baselines included
+[2026-05-08] D3=B: BayesMM text module reproduction starts W3 in parallel
+[2026-05-08] D4=A: clean control included in Main-1
+[2026-05-08] D5=A(AAAI)+B(CVPR): cite MCP for AAAI, self-run for CVPR
+
+================================================================================
+NON-NEGOTIABLE BOTTOM LINES
+================================================================================
+1. all numbers reproducible with 3 random seeds + std
+2. baseline fairness: same backbone/prompt/protocol as Point-Cache
+3. anonymous code release at submission time
+4. honest failure reporting (especially A5 if residual degrades)
+5. theoretical claims have direct experimental evidence
+
+================================================================================
+NOTES
+================================================================================
+(append weekly observations, blockers, adjustments here)
