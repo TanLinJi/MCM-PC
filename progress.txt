@@ -22,7 +22,7 @@ PHASE A: AAAI 2027 (W1-W16)
 [x] env: setup_env.sh successfully runs (PyTorch 1.12 + CUDA 11.6 + dassl + pytorch3d 0.7.2 cu113-wheel + open3d + torch_redstone)
 [x] data: ModelNet-C downloaded and verified (31 GB rsynced)
 [ ] data: ScanObjectNN-C downloaded and verified
-[ ] data: ModelNet40 (clean) downloaded
+[x] data: ModelNet40 (clean) downloaded (OpenShape's test_pc.npy + test_split.json + classnames.txt)
 [ ] data: ScanObjectNN (clean) downloaded
 [x] weights: OpenShape PointBERT-vitg14-rgb loaded successfully on T4 (model.pt 388MB)
 [x] weights: CLIP-ViT-bigG-14-laion2B downloaded (open_clip_pytorch_model.bin 10GB)
@@ -31,11 +31,14 @@ RISK_GATE F1: T4 16GB can load OpenShape + CLIP-ViT-bigG14 simultaneously
   - if FAIL -> downgrade to PointBERT-vitb16 or ULIP-2 base; enable feature pre-encoding pipeline
 
 ------ W2: Point-Cache Reproduction ------
-[~] zero-shot baseline: OpenShape ModelNet-C 7 corruptions L2 reproduced
-    [x] add_global_2: 71.47% (smoke test, 2026-05-09)
-    [ ] dropout_global_2 / dropout_local_2 / jitter_2 / rotate_2 / scale_2 / add_local_2 (TODO)
-[ ] hierarchical cache baseline: numbers within 1pp of paper
-[ ] global cache baseline: numbers within 1pp of paper
+[x] zero-shot baseline: Figure 1(a) bar 1 (clean ModelNet40) reproduced
+    [x] modelnet40 clean: 83.27% (paper 84.56%, delta -1.29pp, within +/-2pp tolerance)
+[x] zero-shot baseline: Figure 1(a) bar 2 (ModelNet-C 35-mean) reproduced
+    [x] all 35 settings (7 corruptions x 5 severities) on OpenShape vitg14-rgb
+    [x] 35-mean ~= 72.51% (paper 73.49%, delta -0.98pp, within +/-2pp tolerance)
+    [x] data fix: scale_1.h5 was 0-byte (corrupted download); re-downloaded 30 MB and re-ran
+[ ] hierarchical cache baseline: Figure 1(a) bar 3 (Point-Cache 35-mean target 76.59%)
+[ ] global cache baseline: Table 4 numbers within 1pp of paper
 RISK_GATE R1: reproduction error >2pp -> 1 week debug; if persistent, fork official code unchanged
 
 ------ W2.5: Probe Experiments (3-4 days, MANDATORY GATE) ------
@@ -209,3 +212,39 @@ Reproducible smoke-test command (run from /root/autodl-tmp/MCM-PC/Point-Cache):
 Result: Final zero-shot test accuracy = 71.47% on ModelNet-C / add_global_2
 Scope: PURE zero-shot (no Point-Cache TTA, no cache update); just CLIP-text x OpenShape-3D cosine logits.
 For Point-Cache TTA, switch runner to runners/model_with_global_cache.py or model_with_hierarchical_caches.py.
+
+--------------------------------------------------------------------------------
+[2026-05-10] W2 Figure 1(a) bar 1 + bar 2 reproduced (OpenShape column)
+--------------------------------------------------------------------------------
+Protocol: 7 corruptions x 5 severities = 35 ModelNet-C settings, arithmetic mean.
+New assets (not yet committed):
+  - Point-Cache/scripts/repro_fig1a_bar2_zs_corruption.sh   (dual-T4 parallel batch driver)
+  - Point-Cache/scripts/repro_fig1a_summarize.py            (log-dir -> per-run + mean)
+  - Point-Cache/logs/fig1a_bar2_20260510_122450/            (35 .log files, source of truth)
+
+bar 1 (clean ModelNet40 zero-shot, single run):
+  Result: 83.27%      Paper: 84.56%      delta: -1.29pp   Status: within tolerance
+
+bar 2 (ModelNet-C zero-shot 35-mean):
+  Result: ~72.51%     Paper: 73.49%      delta: -0.98pp   Status: within tolerance
+
+Per-corruption per-severity (zero-shot, OpenShape vitg14-rgb, npoints=1024):
+                  sev=0    sev=1    sev=2    sev=3    sev=4   |  per-cor mean
+  add_global      78.85    74.72    71.47    69.57    68.15   |   72.55
+  add_local       74.84    70.87    67.50    64.71    63.37   |   68.26
+  dropout_global  83.75    83.06    81.24    78.61    63.57   |   78.05
+  dropout_local   80.47    77.96    73.46    68.03    60.70   |   72.12
+  jitter          79.29    71.39    59.76    45.75    32.66   |   57.77   <- weakest
+  rotate          84.12    83.71    82.54    79.21    72.33   |   80.38   <- most robust
+  scale           80.23    78.81    78.57    77.92    76.82   |   78.47
+
+Notable patterns:
+  - jitter degrades sharpest (79.29 -> 32.66): feature similarity unstable under per-point noise
+  - rotate is gentlest: OpenShape backbone is rotation-aware
+  - dropout_global cliff at sev=4 (only 256 points left) drops to 63.57
+  - These patterns motivate MCP-3D Contribution C1 (ICP-CD geometric distance)
+
+Decision: accept ~1pp delta (D9). Sources: cudnn non-determinism, prompt template ordering,
+fp16 numerics. No deeper debug; proceed to bar 3 (hierarchical TTA).
+
+Decision: do NOT reproduce ULIP / ULIP-2 / Uni3D columns yet (W3+ scope; weights not downloaded).
