@@ -4,7 +4,7 @@ gpu=$1
 lm3d=$2         # uni3d, openshape, ulip
 ckpt_path=$3    # weights/uni3d/lvis/model.pt, weights/uni3d/modelnet40/model.pt, weights/uni3d/scanobjnn/model.pt
                 # weights/openshape/openshape-pointbert-vitg14-rgb/model.pt, weights/ulip/pointbert_ulip2.pt
-dataset=$4     # modelnet_c, sonn_c, snv2_c, omniobject3d
+dataset=$4      # modelnet_c, sonn_c, snv2_c, omniobject3d
 sonn_variant=$5 # obj_only, obj_bg, hardest
 cor_type=$6     # add_global_2, jitter_2
 npoints=$7      # 1024/4096/16384 for `omniobject3d`
