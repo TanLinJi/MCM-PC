@@ -65,7 +65,8 @@ pip install \
     pandas \
     tqdm \
     wandb \
-    tensorboard
+    tensorboard \
+    torch_redstone==0.0.6
 
 echo "==========================================================="
 echo "[4/7] Installing CLIP / OpenCLIP for text encoders"
@@ -141,6 +142,7 @@ check('einops', 'import einops')
 check('omegaconf', 'from omegaconf import OmegaConf')
 check('pytorch3d', 'from pytorch3d.ops import iterative_closest_point, knn_points')
 check('pytorch3d.chamfer', 'from pytorch3d.loss import chamfer_distance')
+check('torch_redstone', 'import torch_redstone as rst')
 check('openai', 'import openai')
 check('sklearn', 'from sklearn.decomposition import PCA')
 print()
@@ -153,6 +155,10 @@ echo "Environment '$ENV_NAME' is ready."
 echo "==========================================================="
 echo "Next steps:"
 echo "  1. conda activate $ENV_NAME"
-echo "  2. bash download_data.sh           # download datasets and weights"
-echo "  3. python generate_paraphrase.py   # generate DeepSeek paraphrases"
+echo "  2. export WANDB_MODE=offline       # log experiments locally to ./wandb/, sync later with 'wandb sync <run-dir>'"
+echo "  3. bash download_data.sh           # download datasets and weights"
+echo "  4. python generate_paraphrase.py   # generate DeepSeek paraphrases"
+echo ""
+echo "[NOTE] All training/eval commands assume WANDB_MODE=offline."
+echo "       To use online wandb dashboards instead, run 'wandb login' once and unset WANDB_MODE."
 echo ""
