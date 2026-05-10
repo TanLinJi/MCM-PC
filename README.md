@@ -108,6 +108,7 @@ python download_uni3d_weights.py
 ### 4. Run zero-shot baseline (smoke test)
 
 ```bash
+cd Point-Cache
 WANDB_MODE=offline CUDA_VISIBLE_DEVICES=0 \
 python runners/zs_infer.py \
   --config configs \
@@ -115,8 +116,47 @@ python runners/zs_infer.py \
   --cache-type global \
   --ckpt_path weights/openshape/openshape-pointbert-vitg14-rgb/model.pt \
   --dataset modelnet_c --cor_type add_global_2 --npoints 1024 \
-  --oshape-version vitg14
+  --oshape-version vitg14 \
+  --wandb-log
 ```
+
+Expected output: `Final Zero-shot test accuracy: 71.47` on `add_global_2` with OpenShape PointBERT-ViT-g/14.
+
+---
+
+## Experiment Logging (Weights & Biases)
+
+This project uses **wandb in offline mode** as the default. All runs save metrics to `Point-Cache/wandb/offline-run-<timestamp>/` without contacting any cloud service, so no account or API key is required to develop locally.
+
+```bash
+# Always export this once per shell session (or add to your ~/.bashrc):
+export WANDB_MODE=offline
+```
+
+After a run, the local artifact looks like:
+
+```
+Point-Cache/wandb/offline-run-20260509_214035-gutbtkon/
+├── files/                # config, requirements, system info
+├── logs/                 # debug, internal logs
+└── run-gutbtkon.wandb    # binary log of all wandb.log() calls
+```
+
+To **upload** offline runs to a wandb cloud dashboard later (e.g. for sharing with collaborators):
+
+```bash
+wandb login                                           # one-time, paste API key from https://wandb.ai/authorize
+wandb sync Point-Cache/wandb/offline-run-*            # batch-sync everything
+```
+
+To **switch to online mode** instead (logs stream to cloud in real time):
+
+```bash
+unset WANDB_MODE
+wandb login
+```
+
+To **disable wandb entirely**, simply omit the `--wandb-log` flag from the command — the runners run identically without it.
 
 ---
 
