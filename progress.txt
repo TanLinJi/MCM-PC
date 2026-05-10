@@ -37,9 +37,12 @@ RISK_GATE F1: T4 16GB can load OpenShape + CLIP-ViT-bigG14 simultaneously
     [x] all 35 settings (7 corruptions x 5 severities) on OpenShape vitg14-rgb
     [x] 35-mean ~= 72.51% (paper 73.49%, delta -0.98pp, within +/-2pp tolerance)
     [x] data fix: scale_1.h5 was 0-byte (corrupted download); re-downloaded 30 MB and re-ran
-[ ] hierarchical cache baseline: Figure 1(a) bar 3 (Point-Cache 35-mean target 76.59%)
+[x] hierarchical cache baseline: Figure 1(a) bar 3 (Point-Cache 35-mean) reproduced
+    [x] all 35 settings on OpenShape vitg14-rgb via repro_fig1a_bar3_tta.sh (~3.5h dual-T4)
+    [x] 35-mean = 75.27% (paper 76.59%, delta -1.32pp, within +/-2pp tolerance)
+    [x] TTA gain = bar3-bar2 = +2.76pp (paper +3.10pp, direction match)
 [ ] global cache baseline: Table 4 numbers within 1pp of paper
-RISK_GATE R1: reproduction error >2pp -> 1 week debug; if persistent, fork official code unchanged
+RISK_GATE R1: PASSED. All 3 bars within +/-2pp; systematic -1pp delta accepted (D9).
 
 ------ W2.5: Probe Experiments (3-4 days, MANDATORY GATE) ------
 [ ] P1: rotation robustness probe (5 angles x OpenShape x 100 samples)
@@ -248,3 +251,41 @@ Decision: accept ~1pp delta (D9). Sources: cudnn non-determinism, prompt templat
 fp16 numerics. No deeper debug; proceed to bar 3 (hierarchical TTA).
 
 Decision: do NOT reproduce ULIP / ULIP-2 / Uni3D columns yet (W3+ scope; weights not downloaded).
+
+--------------------------------------------------------------------------------
+[2026-05-10] W2 Figure 1(a) bar 3 reproduced (closes W2 milestone)
+--------------------------------------------------------------------------------
+Protocol: same 35-setting average as bar 2, but with hierarchical Point-Cache TTA.
+New asset: Point-Cache/scripts/repro_fig1a_bar3_tta.sh (dual-T4 batch driver, ~3.5h)
+Log dir : Point-Cache/logs/fig1a_bar3_20260510_152446/  (35 .log files)
+Summary : Point-Cache/results/fig1a_summary.md  (committed; full matrix + analysis)
+
+bar 3 (ModelNet-C Point-Cache hierarchical TTA 35-mean):
+  Result: 75.27%      Paper: 76.59%      delta: -1.32pp   Status: within tolerance
+
+Per-corruption hierarchical-TTA mean (vs bar2 ZS mean -> TTA gain):
+  add_global      74.64   (zs 72.55,  +2.09)
+  add_local       73.95   (zs 68.26,  +5.69)
+  dropout_global  78.93   (zs 78.05,  +0.88)
+  dropout_local   75.61   (zs 72.12,  +3.49)
+  jitter          64.75   (zs 57.77,  +6.98)   <- biggest TTA save
+  rotate          80.96   (zs 80.38,  +0.58)
+  scale           78.07   (zs 78.47,  -0.40)   <- TTA hurts scale
+
+Key insights for MCP-3D design:
+  - scale: TTA REGRESSES (-0.40pp avg, 4 of 5 severities negative).
+    Cause: feature-cosine retrieval misled by global-shifted manifold.
+    Implication: ICP-CD geometric distance is most promising attack point here.
+    -> Action: W2.5 P2 probe should target scale_2/3/4 first.
+  - jitter sev=4: zs 32.66 -> tta 45.06 (+12.40pp single-cell record).
+    Even after TTA, jitter sev=4 is still the worst (45.06).
+    -> Action: W2.5 P1 + ICP-CD validation should also use jitter as stress test.
+  - rotate: TTA gain only +0.58pp -> "pose-shape disentanglement" framing dead.
+    -> Confirms D5 pivot to "corruption-specificity" narrative.
+  - dropout_global sev=4: zs 63.57 -> tta 65.19 (only +1.62pp).
+    Point cliff (1024->256pts); even TTA cannot rescue. Failure-case material for paper N+1.
+
+Decision (D9 upgrade trigger check): bar 3 delta -1.32pp same direction as bar 1 (-1.29)
+and bar 2 (-0.98). Systematic -1pp bias confirmed; NOT debugged. Proceeding to W2.5.
+
+W2 milestone closure: bar 1 + bar 2 + bar 3 all reproduced. RISK_GATE R1 PASSED.
