@@ -19,19 +19,21 @@ PHASE A: AAAI 2027 (W1-W16)
 ================================================================================
 
 ------ W1: Environment + Reproduction Setup ------
-[ ] env: setup_env.sh successfully runs (PyTorch 1.12 + CUDA 11.6 + dassl + pytorch3d + chamferdist + open3d)
-[ ] data: ModelNet-C downloaded and verified
+[x] env: setup_env.sh successfully runs (PyTorch 1.12 + CUDA 11.6 + dassl + pytorch3d 0.7.2 cu113-wheel + open3d + torch_redstone)
+[x] data: ModelNet-C downloaded and verified (31 GB rsynced)
 [ ] data: ScanObjectNN-C downloaded and verified
 [ ] data: ModelNet40 (clean) downloaded
 [ ] data: ScanObjectNN (clean) downloaded
-[ ] weights: OpenShape PointBERT-vitg14-rgb loaded successfully on T4
-[ ] weights: CLIP-ViT-bigG-14-laion2B downloaded
+[x] weights: OpenShape PointBERT-vitg14-rgb loaded successfully on T4 (model.pt 388MB)
+[x] weights: CLIP-ViT-bigG-14-laion2B downloaded (open_clip_pytorch_model.bin 10GB)
 [ ] paraphrase: DeepSeek API key configured, sandbox call successful
 RISK_GATE F1: T4 16GB can load OpenShape + CLIP-ViT-bigG14 simultaneously
   - if FAIL -> downgrade to PointBERT-vitb16 or ULIP-2 base; enable feature pre-encoding pipeline
 
 ------ W2: Point-Cache Reproduction ------
-[ ] zero-shot baseline: OpenShape ModelNet-C 7 corruptions L2 reproduced
+[~] zero-shot baseline: OpenShape ModelNet-C 7 corruptions L2 reproduced
+    [x] add_global_2: 71.47% (smoke test, 2026-05-09)
+    [ ] dropout_global_2 / dropout_local_2 / jitter_2 / rotate_2 / scale_2 / add_local_2 (TODO)
 [ ] hierarchical cache baseline: numbers within 1pp of paper
 [ ] global cache baseline: numbers within 1pp of paper
 RISK_GATE R1: reproduction error >2pp -> 1 week debug; if persistent, fork official code unchanged
@@ -180,3 +182,30 @@ NON-NEGOTIABLE BOTTOM LINES
 NOTES
 ================================================================================
 (append weekly observations, blockers, adjustments here)
+
+--------------------------------------------------------------------------------
+[2026-05-09] W1 smoke test passed
+--------------------------------------------------------------------------------
+Environment: conda env `mcmpc`, python 3.9.x, torch 1.12.0+cu116
+Missing-deps fix: torch_redstone 0.0.6 (added to setup_env.sh; OpenShape PPTA needs it)
+Upstream bug fix: zs_infer.py:40 wandb.log was not gated by args.wandb -> guarded.
+wandb policy: offline-by-default. Set `export WANDB_MODE=offline` once per shell.
+  Runs are saved to Point-Cache/wandb/offline-run-* (gitignored).
+  Use `wandb sync <run-dir>` to upload to cloud later. See README "Experiment Logging".
+
+Reproducible smoke-test command (run from /root/autodl-tmp/MCM-PC/Point-Cache):
+  WANDB_MODE=offline CUDA_VISIBLE_DEVICES=0 \
+  /root/miniconda3/envs/mcmpc/bin/python runners/zs_infer.py \
+      --config configs \
+      --lm3d openshape \
+      --cache-type global \
+      --ckpt_path weights/openshape/openshape-pointbert-vitg14-rgb/model.pt \
+      --dataset modelnet_c \
+      --cor_type add_global_2 \
+      --npoints 1024 \
+      --oshape-version vitg14 \
+      --wandb-log
+
+Result: Final zero-shot test accuracy = 71.47% on ModelNet-C / add_global_2
+Scope: PURE zero-shot (no Point-Cache TTA, no cache update); just CLIP-text x OpenShape-3D cosine logits.
+For Point-Cache TTA, switch runner to runners/model_with_global_cache.py or model_with_hierarchical_caches.py.
