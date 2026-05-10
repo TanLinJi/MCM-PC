@@ -94,10 +94,13 @@ class PointPatchTransformer(nn.Module):
         self.lift = nn.Sequential(nn.Conv1d(sa_dim + 3, dim, 1), rst.Lambda(lambda x: torch.permute(x, [0, 2, 1])), nn.LayerNorm([dim]))
         self.cls_token = nn.Parameter(torch.randn(dim))
         self.transformer = Transformer(dim, depth, heads, dim_head, mlp_dim, 0.0, rel_pe)
-        
+
+    # patch聚类使用的K-means    
     @staticmethod
     def cluster_patches(local_patches, n_cluster):
         # NOTE here squeeze is vital since KMeans expected dim(features) <= 2.
+        # n_cluster: number of clusters， 作者假设为5
+        # local_patches: (B, N, D), B is batch size（这里通常是1）, N is number of patches, D is dimension of each patch
         features = local_patches.squeeze().cpu().numpy()
         # Initialize KMeans with 5 clusters
         kmeans = KMeans(n_clusters=n_cluster, n_init='auto', random_state=1,)
