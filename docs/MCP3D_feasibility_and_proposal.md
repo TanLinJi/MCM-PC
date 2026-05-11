@@ -375,6 +375,37 @@ $$\mathbf{l}_{\text{final}} = \zeta_1 \cdot \mathbf{h} \cdot (\mathbf{A}^T)^\top
 
 > 写完之后回头读这一节，判断你的 paper 现在处于哪个状态。
 
+### 性能目标三档声明（修补 G4，2026-05-10）
+
+基于同类工作历史增益 anchor + W4 计划的 oracle ceiling 估计，设立三档验证目标。三档**都有对应 paper framing**，不是单档赌注：
+
+| 档次 | 35-mean 增益 | scale 列单独 | 论文 framing | 对应下方三盏灯 |
+|------|-------------|-----------|------------|--------------|
+| **Floor 基础线** | ≥ +0.5pp | ≥ 0pp (至少不退化) | "首个针对 3D TTA 全局形变盲区的探索性工作"，定位为 position paper | Red light 临界 → Yellow 下沿 |
+| **Target 目标线** | +1.0 ~ +2.5pp | +1 ~ +3pp | "新 SOTA + 失败案例修复"，AAAI 标准投稿 | Yellow → Green 过渡 |
+| **Stretch 卓越线** | ≥ +3pp | ≥ +5pp | "范式级改进"，AAAI Oral / 期刊延伸可能 | Green light 稳定达成 |
+
+#### 依据（外部 anchor + 内部 ceiling）
+
+**外部 anchor**（同类 TTA 工作的历史增益）：
+- TPT (NeurIPS'22) on ImageNet-C: **+1.2pp**
+- TDA (CVPR'24) zero-shot TTA: **+0.8pp**
+- Point-Cache (paper) on ModelNet-C 35-mean: **+3.1pp vs ZS**
+
+**内部 ceiling**（W4 要做的 oracle 实验）：
+- 把 cache 检索改成"已知 GT label，从 cache 挑同类样本"
+- 这是任何 cache TTA 的天花板，会给出实际可达上界
+- 若 oracle = 81% (vs ZS 78%)，目标线 +1-2.5pp 就有可解释的 plausibility
+- 若 oracle 仅 79%，必须接受 +0.5-1pp 的现实，framing 转向"失败案例修复"
+
+#### 三档决策规则
+
+- 基础线 + Yellow light → **投 3DV / WACV**，不强投 AAAI
+- 目标线 + Yellow-to-Green → **投 AAAI**，按原方案走
+- 卓越线 + Green → **投 AAAI 并目标 Oral**，同时准备期刊扩展
+
+#### 历史 Green/Yellow/Red 判据（保留，用作 project 生死决策）
+
 **Green light**（值得全力推进）：
 - ☑ ICP-CD 紧凑记忆库在 rotate 损坏上有 ≥ 2% 增益
 - ☑ 紧致性-性能相关性 2D vs 3D 差异显著（差异 ≥ 0.1）

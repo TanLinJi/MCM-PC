@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MCP-3D 概念阶段详细讲义</title>
+  <style>
+    :root {
+      --bg: #0a1020;
+      --bg2: #0f1730;
+      --panel: #141f3a;
+      --panel2: #1a2747;
+      --panel3: #101a33;
+      --text: #eef4ff;
+      --muted: #aab8d6;
+      --faint: #7f8dab;
+      --line: #2b3a61;
+      --cyan: #5eead4;
+      --blue: #7db3ff;
+      --purple: #c4b5fd;
+      --green: #86efac;
+      --yellow: #fde68a;
+      --orange: #fdba74;
+      --red: #fca5a5;
+      --shadow: 0 24px 80px rgba(0,0,0,.36);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 4%, rgba(94,234,212,.15), transparent 26%),
+        radial-gradient(circle at 92% 8%, rgba(196,181,253,.12), transparent 28%),
+        linear-gradient(180deg, var(--bg), #080d1a 68%);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
+      line-height: 1.68;
+    }
+    a { color: var(--cyan); text-decoration: none; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(10, 16, 32, .82);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 10px 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .nav a {
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .nav a:hover { color: var(--text); border-color: var(--cyan); }
+    header, main, footer { max-width: 1240px; margin: 0 auto; padding: 0 22px; }
+    header { padding-top: 54px; padding-bottom: 24px; }
+    .eyebrow {
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    h1 {
+      font-size: clamp(34px, 5.5vw, 64px);
+      line-height: 1.05;
+      margin: 12px 0 14px;
+      max-width: 1040px;
+    }
+    .subtitle { color: var(--muted); max-width: 940px; font-size: 18px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+    .pill {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      padding: 5px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255,255,255,.03);
+      font-size: 13px;
+    }
+    main { padding-bottom: 70px; }
+    section { scroll-margin-top: 92px; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.018)), var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .card.compact { padding: 18px; }
+    .grid { display: grid; gap: 18px; }
+    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .section-title { margin: 38px 0 16px; }
+    .section-title h2 { font-size: clamp(26px, 3.5vw, 40px); line-height: 1.12; margin: 0 0 8px; }
+    .section-title p { margin: 0; color: var(--muted); max-width: 900px; }
+    h2, h3, h4 { line-height: 1.25; }
+    h3 { margin-top: 0; }
+    .muted { color: var(--muted); }
+    .faint { color: var(--faint); }
+    .keyline { border-left: 4px solid var(--cyan); padding-left: 14px; }
+    .warnline { border-left: 4px solid var(--yellow); padding-left: 14px; }
+    .riskline { border-left: 4px solid var(--red); padding-left: 14px; }
+    .goodline { border-left: 4px solid var(--green); padding-left: 14px; }
+    .formula {
+      background: #070c18;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      overflow-x: auto;
+      color: #e2e8f0;
+      margin: 12px 0;
+      white-space: pre-wrap;
+    }
+    .flow { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: stretch; }
+    .flow3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .step {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .step .num {
+      display: inline-flex;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      align-items: center;
+      justify-content: center;
+      color: #06111f;
+      background: var(--cyan);
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+    .step strong { color: var(--text); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 18px; }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--cyan); background: rgba(94,234,212,.08); }
+    tr:last-child td { border-bottom: 0; }
+    .badge { font-weight: 800; border-radius: 999px; padding: 3px 8px; font-size: 12px; }
+    .b-green { color: #052e16; background: var(--green); }
+    .b-yellow { color: #422006; background: var(--yellow); }
+    .b-red { color: #450a0a; background: var(--red); }
+    .b-blue { color: #07152e; background: var(--blue); }
+    .b-purple { color: #22124d; background: var(--purple); }
+    details {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 16px;
+    }
+    details + details { margin-top: 12px; }
+    summary { color: var(--cyan); font-weight: 900; cursor: pointer; }
+    .matrix { display: grid; grid-template-columns: 150px repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .cell {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      min-height: 88px;
+    }
+    .cell.head { color: var(--cyan); font-weight: 900; text-align: center; }
+    .cell.row { color: var(--purple); font-weight: 900; }
+    .cell.on { border-color: rgba(134,239,172,.55); }
+    .cell.off { border-color: rgba(252,165,165,.45); opacity: .82; }
+    .callout {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      background: rgba(255,255,255,.035);
+    }
+    .callout.cyan { border-color: rgba(94,234,212,.45); }
+    .callout.yellow { border-color: rgba(253,230,138,.45); }
+    .callout.red { border-color: rgba(252,165,165,.45); }
+    .callout.green { border-color: rgba(134,239,172,.45); }
+    .timeline { position: relative; padding-left: 20px; }
+    .timeline::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+    .event { position: relative; padding: 0 0 18px 18px; }
+    .event::before { content: ""; position: absolute; left: -20px; top: 8px; width: 12px; height: 12px; border-radius: 999px; background: var(--cyan); box-shadow: 0 0 0 4px rgba(94,234,212,.12); }
+    .small { font-size: 14px; }
+    .big-quote { font-size: 20px; line-height: 1.55; color: var(--text); }
+    .source { color: var(--faint); font-size: 13px; margin-top: 10px; }
+    footer { padding: 30px 22px 60px; color: var(--muted); border-top: 1px solid var(--line); }
+    @media (max-width: 920px) {
+      .two, .three, .four, .flow, .flow3 { grid-template-columns: 1fr; }
+      .matrix { grid-template-columns: 1fr; }
+      .cell.head { text-align: left; }
+      header { padding-top: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#map">总览</a>
+      <a href="#concept0">00 全貌</a>
+      <a href="#vmf">01 vMF</a>
+      <a href="#icpcd">02 ICP-CD</a>
+      <a href="#compactness">03 紧致性</a>
+      <a href="#matrix">04 2×3 矩阵</a>
+      <a href="#paper">论文写法</a>
+      <a href="#gates">实验门控</a>
+      <a href="#next">下一步</a>
+    </div>
+  </nav>
+
+  <header>
+    <div class="eyebrow">MCP-3D · Concepts Phase Detailed Notes</div>
+    <h1>概念阶段详细讲义：从 Point-Cache 软肋到 MCP-3D 方法闭环</h1>
+    <p class="subtitle">这份 HTML 把 `docs/concepts/00_overview.md` 到 `04_2x3_memory_matrix.md` 的内容整理成论文主线讲义。重点不是背公式，而是掌握每个概念服务于哪个软肋、承担哪个 contribution、需要哪个实验来证明。</p>
+    <div class="meta">
+      <span class="pill">生成时间：2026-05-11</span>
+      <span class="pill">阶段：故事 → 鸟瞰 → 概念</span>
+      <span class="pill">来源：MCM-PC/docs/concepts</span>
+      <span class="pill">用途：论文写作 + 实验设计同步</span>
+    </div>
+  </header>
+
+  <main>
+    <section id="map" class="grid two">
+      <div class="card">
+        <h2>这份讲义的核心问题</h2>
+        <p class="big-quote">Point-Cache 已经是 3D TTA 的强 baseline。MCP-3D 要证明的不是“Point-Cache 错了”，而是：它在 3D 几何扰动、文本锚点、记忆库漂移三个方面还有可解释、可验证、可改进的空间。</p>
+        <div class="formula">论文主线 = 软肋识别 → 概念工具 → 方法模块 → 探针实验 → 主实验增益</div>
+      </div>
+      <div class="card">
+        <h2>五个概念的职责</h2>
+        <div class="timeline">
+          <div class="event"><strong>00 Overview</strong><br/><span class="muted">建立全局地图：TTA、Point-Cache、三软肋、四贡献。</span></div>
+          <div class="event"><strong>01 vMF Anchor</strong><br/><span class="muted">修补文本侧 anchor：让类别语义方向更符合球面空间。</span></div>
+          <div class="event"><strong>02 ICP-CD</strong><br/><span class="muted">修补几何侧证据：feature 失败时直接比较点云形状。</span></div>
+          <div class="event"><strong>03 Compactness</strong><br/><span class="muted">解释 memory 失效机制：不是方法模块，而是离线科学诊断。</span></div>
+          <div class="event"><strong>04 Memory Matrix</strong><br/><span class="muted">把前面证据整合成 2×3 多记忆系统。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-title" id="concept0">
+      <h2>00 · 大背景与项目全貌</h2>
+      <p>先把论文问题说清楚：我们做的是 3D 点云 Test-Time Adaptation，不是重新训练模型，也不是监督学习。</p>
+    </div>
+
+    <section class="grid three">
+      <div class="card compact goodline">
+        <h3>训练时</h3>
+        <p>模型主要在干净数据上训练，例如 ModelNet 这类 CAD 点云。训练集分布比较规则，噪声和几何破坏相对少。</p>
+      </div>
+      <div class="card compact warnline">
+        <h3>部署 / 评测时</h3>
+        <p>真实部署中的核心挑战是分布偏移；ModelNet-C / ScanObjectNN-C 用 jitter、dropout、rotate、scale 等人工 corruption 作为可控 proxy / stress test，导致点云坐标和局部结构改变。</p>
+      </div>
+      <div class="card compact keyline">
+        <h3>TTA 目标</h3>
+        <p>测试时边预测边适应，但不使用标签、不反向传播更新模型参数，只利用当前测试流和 memory。</p>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>写作边界：corruption 不等于现实分布偏移本身</h3>
+      <p>论文里应该把真实世界问题表述为 <strong>distribution shift</strong>，把 ModelNet-C / ScanObjectNN-C 的 corruption families 表述为“人为构造的可控代理任务”。因此，scale 下的负增益只能说明 Point-Cache 在该 benchmark stress-test family 上存在失败模式，不能直接写成现实世界中所有尺度漂移都会导致同样失败。</p>
+      <div class="formula">推荐写法：real-world distribution shifts motivate robustness evaluation; controlled corruptions such as scale / rotate / jitter are used as diagnostic stress tests.</div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>Point-Cache 的基本逻辑</h3>
+      <div class="flow flow3">
+        <div class="step"><span class="num">1</span><br/><strong>编码</strong><br/>测试样本 X 进入 3D-VLM，得到 feature z。</div>
+        <div class="step"><span class="num">2</span><br/><strong>检索</strong><br/>z 与每类 cache anchor 比较 feature 距离。</div>
+        <div class="step"><span class="num">3</span><br/><strong>更新</strong><br/>把高置信预测样本写回 memory，服务后续测试样本。</div>
+      </div>
+      <p class="muted">它的优点是简洁有效；MCP-3D 的切入点是：在可控几何 corruption stress tests 中，当 feature space 不可靠时，原系统缺少几何兜底和记忆健康诊断。</p>
+    </section>
+
+    <section class="grid three" style="margin-top:18px;">
+      <div class="card riskline">
+        <h3>软肋 1：文本锚点不够准</h3>
+        <p>Point-Cache 用多 prompt 的普通平均构造类别文本 anchor，但 CLIP / OpenShape 特征是归一化向量，本质上位于单位球面。</p>
+        <p><strong>对应解法：</strong>vMF MAP 文本锚点。</p>
+      </div>
+      <div class="card riskline">
+        <h3>软肋 2：feature 距离怕几何破坏</h3>
+        <p>旋转、尺度变化、缺点等 benchmark corruptions 可能让同类点云在 feature space 中远离，即“feature distance 撒谎”。</p>
+        <p><strong>对应解法：</strong>ICP + Chamfer Distance。</p>
+      </div>
+      <div class="card riskline">
+        <h3>软肋 3：不知道 memory 是否变坏</h3>
+        <p>测试流更新会把模型自己的预测写回 memory；一旦错误样本入库，memory 可能逐渐散开并污染后续预测。</p>
+        <p><strong>对应解法：</strong>compactness diagnosis。</p>
+      </div>
+    </section>
+
+    <div class="section-title" id="vmf">
+      <h2>01 · vMF 文本锚点：让类别语义方向更合理</h2>
+      <p>这个概念解决的是“每个类别的文本 anchor 应该怎么估计”。它是低风险但有理论加分的 C4。</p>
+    </div>
+
+    <section class="grid two">
+      <div class="card">
+        <h3>什么是文本锚点？</h3>
+        <p>在 CLIP-style 3D-VLM 里，分类常常是比较点云 feature 和文本 feature 的相似度。每个类别都需要一个文本代表方向，例如 `chair_text_anchor`。</p>
+        <div class="formula">预测 = argmax_c sim(z_point, text_anchor_c)</div>
+        <p class="muted">如果 text anchor 偏了，初始 text logits 就会偏，后续 memory 更新也可能被带偏。</p>
+      </div>
+      <div class="card">
+        <h3>Point-Cache 的普通平均</h3>
+        <p>原始做法通常是准备多条 prompt，把它们编码成文本向量，再做算术平均和归一化。</p>
+        <div class="formula">t_1, t_2, ..., t_64 → average → normalize → anchor</div>
+        <p class="muted">严谨说，问题不在于“多 prompt”错了，也不能说归一化均值必然错误；问题在于它只是一个无不确定性、无先验、等权重的点估计。</p>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>为什么“球面”很重要？</h3>
+      <div class="grid two">
+        <div>
+          <p>CLIP / OpenShape 往往会把 feature 归一化，也就是强制向量长度为 1。归一化之后，向量主要表达“方向”，不再表达长度。</p>
+          <div class="formula">||t_i|| = 1,  ||z_point|| = 1</div>
+        </div>
+        <div>
+          <p>所有长度为 1 的向量都在单位球面上。球面上的“中心”应该是方向中心，而不是普通欧氏空间里的坐标平均。</p>
+          <div class="formula">普通均值 + normalize = 球面方向点估计；vMF-MAP = 球面概率模型 + 先验收缩 + 置信度建模。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>论文数学论证：不要证明“普通平均必错”，而要证明“普通平均脆弱”</h3>
+      <p>设每条 prompt 的归一化文本特征为 <code>t_i ∈ S^{d-1}</code>。Point-Cache 的类别锚点可以写成：</p>
+      <div class="formula">a_PC = normalize(Σ_i t_i)</div>
+      <p>如果所有 <code>t_i</code> 都独立来自同一个理想 vMF 分布 <code>vMF(μ, κ)</code>，那么 <code>normalize(Σ_i t_i)</code> 实际上就是 mean direction <code>μ</code> 的最大似然估计（MLE, Maximum Likelihood Estimation）。所以论文里不能说它“数学上错误”。</p>
+      <div class="grid two">
+        <div class="callout yellow"><strong>Point-Cache 的真实弱点</strong><br/>它默认所有 prompt 同质、等权、无噪声，并且只输出一个点估计；当 prompt 存在多语义模式、模板偏差或类名歧义时，它不知道自己的 anchor 是否可靠。</div>
+        <div class="callout green"><strong>vMF-MAP 的改进点</strong><br/>它显式估计 prompt 集中度 <code>κ</code>，再用先验 anchor 做 Bayesian shrinkage；当新 prompt 方向一致时相信数据，当 prompt 分散时回退到先验。</div>
+      </div>
+      <div class="formula">噪声 prompt 模型：E[t] = (1-ε) A_d(κ) μ_c + ε m_noise
+
+如果 ε &gt; 0，普通均值方向会被 m_noise 拉偏；
+vMF-MAP: a_MAP = normalize(κ_hat · m_c + κ_0 · a_prior)
+当 κ_hat 小时，自动降低 noisy prompt 的影响。</div>
+      <p class="muted">论文里的可靠性主张应写成：“在 noisy / mixed prompt distributions 下，vMF-MAP 是比等权点估计更稳健的球面估计器”，并用 simulation + ablation 支撑，而不是宣称普通平均在所有情况下都不可靠。</p>
+    </section>
+
+    <section class="grid three" style="margin-top:18px;">
+      <div class="card compact keyline">
+        <h3>vMF 是什么</h3>
+        <p>von Mises-Fisher 分布可以理解成“球面上的高斯分布”，用来描述围绕某个中心方向的随机方向样本。</p>
+      </div>
+      <div class="card compact keyline">
+        <h3>μ 表示什么</h3>
+        <p>`μ` 是 mean direction，也就是某个类别在文本语义空间里的主方向。我们最终想要的 anchor 就是它。</p>
+      </div>
+      <div class="card compact keyline">
+        <h3>κ 表示什么</h3>
+        <p>`κ` 是 concentration。κ 大说明 prompt 方向一致；κ 小说明 prompt 分散，应该更依赖先验。</p>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>MAP 如何把“新描述”和“先验模板”结合</h3>
+      <p>这里的 MAP 是 Maximum A Posteriori。它不是完全相信新生成的 paraphrase，也不是完全沿用旧模板，而是把两者按可信度加权。</p>
+      <div class="formula">a_c = normalize( κ_hat × m_c + κ_0 × z_template )
+
+m_c: 新生成描述的方向均值
+z_template: Point-Cache 原有模板 anchor
+κ_hat: 从新描述一致性中估计出的集中度
+κ_0: 先验强度，默认可从 5.0 起步扫描</div>
+      <div class="grid two">
+        <div class="callout cyan"><strong>如果新描述很一致</strong><br/>κ_hat 大，数据贡献更大，anchor 更偏向新描述提供的语义方向。</div>
+        <div class="callout yellow"><strong>如果新描述很散乱</strong><br/>κ_hat 小，先验模板贡献更大，避免 anchor 被噪声描述拉偏。</div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>为什么 vMF 只放在文本侧？</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>理由</th><th>文本侧</th><th>点云侧</th><th>结论</th></tr></thead>
+          <tbody>
+            <tr><td>样本量</td><td>每类几十条 paraphrase，少而稳定</td><td>TTA 中 cache 样本更多但可能更脏</td><td>文本侧更需要参数化分布稳定估计</td></tr>
+            <tr><td>算力</td><td>启动时离线计算一次</td><td>每 batch 都动态更新</td><td>点云侧频繁拟合 vMF 成本过高</td></tr>
+            <tr><td>结构信息</td><td>主要是语义方向</td><td>包含真实 3D 几何结构</td><td>点云侧更适合 ICP-CD 和 KNN 经验聚合</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="source">对应文档：`docs/concepts/01_vmf_anchor.md`；实现位置计划：`Point-Cache/runners/model_with_mcp3d.py` 中 `compute_vmf_anchor` / `build_vmf_text_anchors`。</p>
+    </section>
+
+    <div class="section-title" id="icpcd">
+      <h2>02 · ICP-CD 几何距离：当 feature distance 撒谎时补一条几何证据</h2>
+      <p>这是 MCP-3D 的核心高风险贡献 C1。它要证明：在某些可控 3D corruption stress tests 下，feature 距离不可靠，而几何距离能提供互补信号。</p>
+    </div>
+
+    <section class="grid two">
+      <div class="card">
+        <h3>feature distance 为什么会失败？</h3>
+        <p>假设两把椅子本来同类，但一把旋转了 90°。理想情况下 encoder 应该旋转不变，二者 feature 相似度仍然高。</p>
+        <div class="formula">理想：cos(z_chair, z_rotated_chair) ≈ 0.95</div>
+        <p>但如果 encoder 只是“近似不变”，实际可能变成：</p>
+        <div class="formula">失败：cos(z_chair, z_rotated_chair) ≈ 0.50</div>
+      </div>
+      <div class="card">
+        <h3>Point-Cache 的缺口</h3>
+        <p>Point-Cache 主要相信 feature space：feature 近就是同类，feature 远就是异类。一旦 feature space 在可控几何 corruption 下出错，系统没有直接查看 3D 形状的兜底机制。</p>
+        <div class="callout red"><strong>论文要证明的关键：</strong>不是说 feature 没用，而是说 feature 在某些 benchmark corruption families 下会局部失灵。</div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>必须补的实验证据：feature distance 真的会失败吗？</h3>
+      <p>这个不能只靠直觉，必须用 probe experiments 证明。建议把它写成 C1 的前置诊断实验，而不是直接跳到方法。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>实验</th><th>要证明什么</th><th>指标</th><th>失败/通过判据</th></tr></thead>
+          <tbody>
+            <tr><td>P1 feature invariance probe</td><td>同一物体经过 rotate / scale / dropout 后，feature 是否仍然接近</td><td>cosine similarity drop、clean-corrupted rank</td><td>若同物体 pair 的 cosine 明显下降或 rank 跌出 top-k，说明 feature distance 有局部失败</td></tr>
+            <tr><td>P5 cross-method negative gain</td><td>scale 负增益是 hierarchical 特例，还是 cache-family 共性</td><td>ZS / global cache / hierarchical cache 的 scale 列差异</td><td>决定论文写“方法共性”还是“hierarchical failure mode”</td></tr>
+            <tr><td>Feature-vs-geometry ROC</td><td>feature distance 和 ICP-CD 谁更能区分同类/异类 pair</td><td>ROC=Receiver Operating Characteristic，AUC=Area Under the Curve</td><td>若 feature AUC 降而 ICP-CD AUC 稳，C1 成立；若二者都低，C1 需要降级</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>ICP-CD 的三步流程</h3>
+      <div class="flow flow3">
+        <div class="step"><span class="num">1</span><br/><strong>PCA 主轴预对齐</strong><br/>先把两个点云的主要变化方向对齐，给 ICP 一个好初值。</div>
+        <div class="step"><span class="num">2</span><br/><strong>ICP 细对齐</strong><br/>迭代寻找旋转 R 和平移 t，使 source 点云尽量贴合 target 点云。</div>
+        <div class="step"><span class="num">3</span><br/><strong>Chamfer Distance</strong><br/>对齐后计算两个点云互相最近邻距离的平均，CD 越小形状越像。</div>
+      </div>
+      <div class="formula">CD(P, Q) = mean_p min_q ||p - q|| + mean_q min_p ||q - p||</div>
+    </section>
+
+    <section class="grid two" style="margin-top:18px;">
+      <div class="card goodline">
+        <h3>理论希望</h3>
+        <p>同类点云即使姿态不同，经过 ICP 对齐后应该形状接近，CD 较小；异类点云即使强行对齐，形状结构仍不同，CD 较大。</p>
+      </div>
+      <div class="card riskline">
+        <h3>核心隐忧</h3>
+        <p>异类但形状相似的对象可能也有小 CD，例如扶手椅 vs 小沙发、无靠背椅 vs 小桌子。这就是 C1 的阻断级风险。</p>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>如何解决 C1 的阻断级风险？</h3>
+      <p>C1 不能设计成“只要 ICP-CD 小就相信几何”。正确策略是把 ICP-CD 当作互补证据，并且用门控机制防止相似异类误伤。</p>
+      <div class="grid three">
+        <div class="callout red"><strong>1. 跨类 ROC / AUC 先验检查</strong><br/>先测 ICP-CD 对 same-class vs different-class pair 的区分度。若 AUC &lt; 0.7，C1 不能作为主预测模块；若 AUC &gt; 0.85，几何证据站得住。</div>
+        <div class="callout yellow"><strong>2. margin gating</strong><br/>不仅看最小 CD，还看 top-1 与 top-2 几何距离的 margin。如果 chair 和 sofa 的 CD 都小，说明几何不确定，应降低 geometry 权重。</div>
+        <div class="callout green"><strong>3. 多源一致性融合</strong><br/>ICP-CD 只在 feature 不确定或 corruption stress test 暴露 feature failure 时加权增强；最终仍与 text logits、feature cache、boundary calibration 一起决策。</div>
+      </div>
+      <div class="formula">safe_geo_weight = g(AUC_classpair, CD_margin, feature_entropy)
+
+if CD_margin small or class-pair AUC low:
+    reduce ω or fallback to feature/text
+else:
+    use ICP-CD as complementary evidence</div>
+      <p class="muted">这意味着 C1 的安全版本不是“几何替代 feature”，而是“几何在可验证可靠的区域补充 feature”。</p>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>feature 距离和几何距离如何融合？</h3>
+      <p>两种距离量纲不同，不能直接相加。计划使用 per-class running statistics 做 z-score，再加权融合。</p>
+      <div class="formula">z_feat = (d_feat - μ_feat_c) / σ_feat_c
+z_geo  = (d_geo  - μ_geo_c ) / σ_geo_c
+
+d_combined = (1 - ω) × z_feat + ω × z_geo</div>
+      <div class="grid three">
+        <div class="callout cyan"><strong>ω = 0</strong><br/>只用 feature，退化为 Point-Cache 类似逻辑。</div>
+        <div class="callout cyan"><strong>ω = 0.5</strong><br/>feature 与 geometry 等权，是初始合理点。</div>
+        <div class="callout cyan"><strong>ω = 1</strong><br/>只用几何，风险是相似异类可能混淆。</div>
+      </div>
+      <p class="source">对应文档：`docs/concepts/02_icp_cd_distance.md`；实现位置计划：`pca_principal_axis_align`、`icp_then_chamfer`、`compute_cell_logits`。</p>
+    </section>
+
+    <div class="section-title" id="compactness">
+      <h2>03 · Compactness Diagnosis：给 memory 做体检</h2>
+      <p>紧致性诊断不是直接提高性能的在线模块，而是解释 TTA 成败机制的离线科学分析，对应 contribution C2。</p>
+    </div>
+
+    <section class="grid two">
+      <div class="card">
+        <h3>什么是紧致性？</h3>
+        <p>对于某一类 c，如果 memory 中的 anchor 都靠近该类文本锚点，说明它们很“紧”；如果 anchor 分散，说明 memory 可能变脏。</p>
+        <div class="formula">Φ(c) = mean_k || z_k - a_c ||
+
+Φ 小 → memory 紧致 → 类内方差小 → 决策稳
+Φ 大 → memory 松散 → 类内方差大 → 决策不稳</div>
+      </div>
+      <div class="card">
+        <h3>为什么这是“诊断”而不是“方法”？</h3>
+        <p>紧致性测量可能需要真实标签来确认某个 anchor 是否真的属于类 c。因此它不能直接用于无监督 TTA 推理过程。</p>
+        <div class="callout yellow"><strong>关键表述：</strong>它是离线诊断工具，用于理解模型为什么失败，而不是部署时参与预测的在线模块。</div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>它从 2D MCP 论文继承了什么问题？</h3>
+      <p>2D MCP 发现：memory compactness 与最终精度之间强相关，Pearson r 约为 0.82。MCP-3D 要问的是：这个现象在 3D 点云 TTA 中是否仍然成立？</p>
+      <div class="grid three">
+        <div class="callout green"><strong>情况 A：r ≈ 0.82</strong><br/>说明 2D 发现跨模态成立，可写成普适规律。</div>
+        <div class="callout yellow"><strong>情况 B：r ≈ 0.5-0.75</strong><br/>说明 3D 中部分成立，可写成 corruption-specific 现象。</div>
+        <div class="callout red"><strong>情况 C：r &lt; 0.3</strong><br/>说明 C2 失败，需要改写为“3D 与 2D 不同”的反向叙事。</div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>测量流程</h3>
+      <div class="flow flow3">
+        <div class="step"><span class="num">1</span><br/><strong>跑完整 TTA</strong><br/>模型正常预测、正常更新 memory，不用标签参与推理。</div>
+        <div class="step"><span class="num">2</span><br/><strong>周期性记录</strong><br/>每 50 步记录 Φ(c) 和窗口精度，形成时间序列。</div>
+        <div class="step"><span class="num">3</span><br/><strong>离线分析</strong><br/>计算 Pearson r，画 Φ-accuracy 散点图和跨 corruption 表格。</div>
+      </div>
+      <p class="source">对应文档：`docs/concepts/03_compactness_diagnosis.md`；计划实现：`Point-Cache/utils/diagnosis.py` 中 `measure_compactness`、`log_phi_vs_acc`、`compute_pearson_r`。</p>
+    </section>
+
+    <div class="section-title" id="matrix">
+      <h2>04 · 2×3 Memory Matrix：把多源证据组织成最终方法</h2>
+      <p>这是工程整合贡献 C3。它不是单个 cache，而是按“表征轴 × 功能轴”拆成 6 个格子。</p>
+    </div>
+
+    <section class="card">
+      <h3>两条轴</h3>
+      <div class="grid two">
+        <div class="callout cyan"><strong>表征轴：global / local</strong><br/>global 看整个点云；local 看局部 patch。这个继承自 Point-Cache 的层次记忆。</div>
+        <div class="callout cyan"><strong>功能轴：confidence / compactness / boundary</strong><br/>confidence 存高置信样本；compactness 存几何相似样本；boundary 存决策边界附近样本。</div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>2×3 矩阵布局</h3>
+      <div class="matrix">
+        <div class="cell"></div>
+        <div class="cell head">Global<br/><span class="muted">整个点云</span></div>
+        <div class="cell head">Local<br/><span class="muted">局部 patch</span></div>
+        <div class="cell row">Confidence</div>
+        <div class="cell on"><strong>global_conf</strong><br/><span class="muted">低 entropy 的整体样本，作为每类标杆。</span></div>
+        <div class="cell on"><strong>local_conf</strong><br/><span class="muted">低 entropy 的局部 patch，对遮挡更鲁棒。</span></div>
+        <div class="cell row">Compactness</div>
+        <div class="cell on"><strong>global_comp</strong><br/><span class="muted">用 ICP-CD 选几何上最像的整体样本。</span></div>
+        <div class="cell on"><strong>local_comp</strong><br/><span class="muted">用 patch ICP-CD 选局部几何相似样本。</span></div>
+        <div class="cell row">Boundary</div>
+        <div class="cell on"><strong>global_bnd</strong><br/><span class="muted">中等 entropy 的模糊整体样本，提供校准信号。</span></div>
+        <div class="cell off"><strong>local_bnd</strong><br/><span class="muted">默认关闭，待 ablation 验证是否保留。</span></div>
+      </div>
+    </section>
+
+    <section class="grid two" style="margin-top:18px;">
+      <div class="card">
+        <h3>最终融合公式：口述版</h3>
+        <div class="formula">final_logits = text_logits
+             + positive memory evidence
+             - boundary calibration evidence</div>
+        <p>其中 positive memory 包括 confidence 和 compactness 格子；boundary 用负号不是“负样本训练”，而是在推理 logits 层面对模糊区域进行校准。</p>
+      </div>
+      <div class="card">
+        <h3>boundary memory 的正确理解</h3>
+        <p class="warnline">它不是 negative sample。MCP-3D 是 training-free TTA，没有 loss、没有反向传播、没有把特征推远的训练过程。</p>
+        <p class="goodline">它是 calibration signal：如果当前查询像 boundary 样本，说明它可能也处于模糊区，应该降低过度自信。</p>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>推理时完整流程</h3>
+      <div class="flow">
+        <div class="step"><span class="num">1</span><br/><strong>编码</strong><br/>得到全局 feature、local patch feature，以及离线 vMF text anchors。</div>
+        <div class="step"><span class="num">2</span><br/><strong>算格子 logits</strong><br/>每个 memory cell 都输出一组类别 logits。</div>
+        <div class="step"><span class="num">3</span><br/><strong>融合预测</strong><br/>text + 正向格子 - boundary 校准，得到 final logits。</div>
+        <div class="step"><span class="num">4</span><br/><strong>更新 memory</strong><br/>根据预测和筛选标准，把当前样本写入相应格子。</div>
+      </div>
+      <p class="source">对应文档：`docs/concepts/04_2x3_memory_matrix.md`；计划实现：`CellConfig`、`MemoryCell`、`MCP3DMemoryMatrix`、`fuse_multi_source_logits`。</p>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>新的论文卖点：diagnosis-driven TTA</h3>
+      <p>这个方向可以成为文章的重要卖点：我们不是只堆一个新 cache 模块，而是从根因上分析为什么当前 SOTA 在某些 benchmark corruption 下会出现负增益。</p>
+      <div class="formula">现有方法常见叙事：提出新模块 → 跑 benchmark → 精度提升
+
+MCP-3D 更强叙事：发现负增益 → 诊断 feature/cache/memory 失效机制 → 设计几何感知多记忆修复 → 用 probe + ablation 验证每个机制</div>
+      <div class="grid two">
+        <div class="callout green"><strong>可写进 Introduction</strong><br/>“We provide a diagnosis-driven analysis of negative adaptation in cache-based 3D TTA, and use the diagnosis to motivate geometry-aware memory design.”</div>
+        <div class="callout yellow"><strong>注意前提</strong><br/>这个卖点需要 P5 / P1 / P2 支撑。没有跨方法和机制实验前，只能写成 hypothesis / preliminary observation，不能写成最终结论。</div>
+      </div>
+    </section>
+
+    <div class="section-title" id="paper">
+      <h2>论文写作锚点：每个概念该放在哪里</h2>
+      <p>概念复习不是孤立学习，而是为了写作和实验并行推进。</p>
+    </div>
+
+    <section class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>概念</th><th>论文位置</th><th>写作任务</th><th>需要实验支撑</th></tr></thead>
+          <tbody>
+            <tr><td>3D TTA + Point-Cache 软肋</td><td>Introduction / Motivation</td><td>写清楚为什么 3D 几何扰动让现有 cache 方法不够</td><td>Fig.1(a) baseline 复现 + corruption 分析</td></tr>
+            <tr><td>vMF 文本锚点</td><td>Method §3.3</td><td>说明球面特征、普通均值的理想条件、vMF-MAP 的稳健性</td><td>kappa_0 扫描 / anchor ablation / noisy prompt simulation</td></tr>
+            <tr><td>ICP-CD</td><td>Method §3.4</td><td>说明 PCA 预对齐、ICP、CD、z-score 融合与安全门控</td><td>P1 旋转不变性 + P5 跨条件 + ROC/AUC + omega scan</td></tr>
+            <tr><td>Compactness Diagnosis</td><td>Experiment §4.5</td><td>强调离线诊断，解释 memory drift 机制</td><td>P2 Pearson r + scatter plot + corruption table</td></tr>
+            <tr><td>2×3 Matrix</td><td>Method §3.5 / Ablation §4.4</td><td>解释 6 个格子职责和融合公式</td><td>leave-one-out ablation + local_bnd 开关测试</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="section-title" id="gates">
+      <h2>实验门控：哪些概念必须被验证</h2>
+      <p>概念阶段的最终目标，是知道后续 W2.5/W3-W7 为什么要这样跑。</p>
+    </div>
+
+    <section class="grid three">
+      <div class="card riskline">
+        <h3>P1：旋转不变性探针</h3>
+        <p>验证 3D-VLM feature 是否真的在旋转下显著漂移。</p>
+        <p><span class="badge b-red">阻断风险</span></p>
+        <p class="muted">如果 cosine 始终 &gt; 0.95，ICP-CD 的必要性下降，C1 需要重新定位。</p>
+      </div>
+      <div class="card riskline">
+        <h3>P2：紧致性相关探针</h3>
+        <p>验证 3D memory compactness 和 accuracy 是否相关。</p>
+        <p><span class="badge b-red">阻断风险</span></p>
+        <p class="muted">如果 r &lt; 0.3，C2 不能按原叙事写，需要 pivot。</p>
+      </div>
+      <div class="card riskline">
+        <h3>P5：跨条件几何探针</h3>
+        <p>验证 ICP-CD 在不同 corruption 下是否提供稳定互补信号。</p>
+        <p><span class="badge b-yellow">关键补强</span></p>
+        <p class="muted">它帮助确定 ICP-CD 是 generalizable 贡献，还是只对某些情况有效。</p>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h3>当前最重要的概念闭环</h3>
+      <div class="formula">Point-Cache 依赖 text anchor + feature memory
+        ↓
+文本 anchor：用 vMF MAP 让语义方向更稳
+        ↓
+feature memory：用 ICP-CD 补几何证据
+        ↓
+memory drift：用 compactness diagnosis 解释何时变坏
+        ↓
+系统整合：用 2×3 matrix 融合 confidence / compactness / boundary
+        ↓
+实验门控：P1 / P2 / P5 决定论文叙事是否成立</div>
+    </section>
+
+    <div class="section-title" id="next">
+      <h2>下一步阅读与讲解路线</h2>
+      <p>这份 HTML 是完整概念地图。继续讲解时建议按“先核心、再诊断、最后整合”的顺序。</p>
+    </div>
+
+    <section class="grid two">
+      <div class="card">
+        <h3>推荐继续讲解顺序</h3>
+        <details open><summary>第一步：ICP-CD 几何距离</summary><p>这是 C1，也是最大风险和最大潜在增益来源。优先讲透 ICP、CD、z-score 融合、A1/A2 风险。</p></details>
+        <details><summary>第二步：Compactness Diagnosis</summary><p>讲清楚它为什么是“科学发现”而不是“在线方法”，避免论文被审稿人质疑标签泄露。</p></details>
+        <details><summary>第三步：2×3 Memory Matrix</summary><p>把 vMF、ICP-CD、boundary calibration 组合成最终方法，并准备 ablation 表。</p></details>
+      </div>
+      <div class="card">
+        <h3>一句话总结</h3>
+        <p class="big-quote">MCP-3D 的概念主线是：用 vMF 稳住文本语义起点，用 ICP-CD 补上 3D 几何证据，用 compactness 解释 memory drift，再用 2×3 memory matrix 把这些信号整合成一个可消融、可验证、可写成论文的方法。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p><strong>保存路径：</strong>`/root/autodl-tmp/MCM-PC/reports/2026-05-11_concepts_detailed.html`</p>
+    <p><strong>源文件：</strong>`docs/concepts/00_overview.md`、`01_vmf_anchor.md`、`02_icp_cd_distance.md`、`03_compactness_diagnosis.md`、`04_2x3_memory_matrix.md`</p>
+  </footer>
+</body>
+</html>

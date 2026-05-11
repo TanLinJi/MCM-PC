@@ -139,6 +139,56 @@ boundary 格子捕捉的是"模糊样本"
   - 类似 Point-Cache 的 negative cache 机制
 ```
 
+### 5.x 常见误解澄清（修补 G6, 2026-05-10）
+
+新读者经常把 boundary memory 理解错，这里明确区分：
+
+```
+误解 1：boundary memory 是负样本（negative sample）
+  -> 错误。负样本通常意味着用损失函数（如 InfoNCE 对比损失）
+     训练时让特征【远离】负样本。
+  -> 但 MCP-3D 是 TTA (Test-Time Adaptation) = training-free 范式，
+     没有任何损失函数在跑，没有参数在更新。
+     "负样本" 这个词在 TTA 里本质是误用。
+
+误解 2：logits 里的负号意味着"排斥"这一类
+  -> 错误。负号作用在 logits 层面，不是特征层面。
+  -> 它降低的是主预测在"模糊区"的【置信度】，
+     让 fusion 层知道"这个区域不要瞎自信"。
+  -> 本质是【校准信号 / calibration signal】，不是【类别排斥】。
+
+真实机制：boundary memory 存什么、怎么用
+  存什么：
+    - 特征向量（用于余弦相似度比较）
+    - top-k 类别软标签 e.g. [chair: 0.4, sofa: 0.35, stool: 0.25]
+    - entropy 值（筛选进入 boundary 的门槛）
+
+  怎么用：
+    1. 新查询 q 进来，算 q 和 M_bnd 里每个样本的余弦
+    2. 若 max_sim > 阈值 → 说明 q 也处于"模糊区"
+    3. 这时主预测 logits 的 top-1 值被软化（乘以 < 1 的因子）
+       或 boundary 样本的软标签被加权融合进 final prediction
+    4. 结果：在 3 个接近类别上分布更均匀，而不是"硬选一个"
+
+与 Point-Cache 的 negative cache 的区别（v2 提案 Risk 表已指出）：
+  - Point-Cache neg cache：prob_map 软掩码，机制相近
+  - MCP-3D Boundary Memory 当前 base 版：机制近似相同（风险点）
+  - 差异化方向（若 A1 消融显示 < 0.5% 增益，必须升级）：
+      基于 logits 梯度方向的不确定性（而非仅 entropy 区间）
+      → 这是 W7 阶段的待验证项
+```
+
+数学描述（已在 `MCP3D_full_proposal_v2.md` §4.6 展开）：
+
+```
+l_final = zeta_1 * main_prediction
+        + zeta_2 * [rho * global + (1-rho) * local]  ← 正向：信心+紧凑
+        - zeta_3 * Psi(h, M_bnd)                     ← 校准：boundary 惩罚项
+
+其中 Psi 是 boundary memory 的贡献，负号表示降低置信。
+关键：这个负号在【inference 时】作用，不是训练时的 loss。
+```
+
 ---
 
 ## 6. 怎么调融合权重 a_i

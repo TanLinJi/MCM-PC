@@ -88,6 +88,34 @@ Point-Cache 完全依赖 3D-VLM 的 feature space。它的逻辑是：
 
 ---
 
+### 3.1 这个判断必须用实验补强
+
+论文里不能只说"feature distance 可能失败"，必须补诊断实验：
+
+```
+P1 feature invariance probe:
+  对同一个点云 X，构造 X_clean 和 X_corrupted
+  计算 cosine(f(X_clean), f(X_corrupted))
+  如果同物体 pair 的 cosine 明显下降，说明 feature 对该 corruption 不稳定
+
+Feature-vs-geometry ROC:
+  ROC = Receiver Operating Characteristic = 受试者工作特征曲线
+  AUC = Area Under the Curve = 曲线下面积
+  比较 feature distance 和 ICP-CD 在 same-class / different-class pair 上的区分能力
+```
+
+判断：
+
+```
+如果 feature AUC 下降但 ICP-CD AUC 稳定：
+  -> C1 有强证据
+
+如果 feature 和 ICP-CD 都下降：
+  -> C1 不能作为主贡献，只能作为诊断或辅助信号
+```
+
+---
+
 ## 4. MCP-3D 方案：直接比较 3D 形状本身
 
 ### 4.1 核心想法
@@ -207,6 +235,51 @@ W2.5 探针实验：
   -> contribution C1 失败，整个 W2.5 之后方向要变
 如果 AUC > 0.85：
   -> CD 有判别力，C1 站得住
+```
+
+### 5.3 C1 的安全解决方案
+
+C1 不能写成"几何距离替代 feature distance"。
+更安全的写法是：
+
+```
+ICP-CD 是 feature distance 的互补证据，
+只在几何证据可靠时增强预测。
+```
+
+具体有三层保护：
+
+```
+1. 跨类 ROC/AUC
+   - 先测哪些类对适合用 CD 区分
+   - AUC < 0.7 的类对不让 CD 主导
+
+2. CD margin gating
+   - 不只看最小 CD
+   - 还看 top-1 CD 和 top-2 CD 的差距
+   - 如果 chair 和 sofa 都很小，说明几何不确定，降低 omega
+
+3. 多源一致性融合
+   - 最终仍然结合 text logits、feature cache、boundary memory
+   - ICP-CD 只在 feature 不确定 / corruption stress test 暴露 failure 时增强
+```
+
+公式化写法：
+
+```
+safe_geo_weight = g(AUC_classpair, CD_margin, feature_entropy)
+
+if CD_margin small or AUC_classpair low:
+    reduce omega or fallback to feature/text
+else:
+    use ICP-CD as complementary evidence
+```
+
+所以 C1 的最终定位是：
+
+```
+不是"几何永远更好"
+而是"几何在可验证可靠的区域补充 feature"
 ```
 
 ---

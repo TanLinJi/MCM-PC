@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP-3D 论文复习 Review · 2026-05-10 晚</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #1c2128;
+  --border: #30363d;
+  --text: #e6edf3;
+  --muted: #8d96a0;
+  --accent: #58a6ff;
+  --accent2: #d2a8ff;
+  --success: #3fb950;
+  --warning: #d29922;
+  --danger: #f85149;
+  --info: #39c5cf;
+  --code-bg: #010409;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  padding: 24px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
+h1 { font-size: 26px; color: var(--accent); margin-bottom: 8px; }
+.status { color: var(--muted); font-size: 13px; }
+.status strong { color: var(--text); }
+.status .pill { display: inline-block; padding: 2px 8px; background: var(--bg3); border-radius: 10px; margin: 0 4px; font-size: 12px; }
+
+nav.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 28px; overflow-x: auto; }
+nav.tabs button {
+  background: transparent; color: var(--muted); border: none;
+  padding: 12px 18px; font-size: 14px; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  white-space: nowrap; transition: color 0.15s;
+}
+nav.tabs button:hover { color: var(--text); }
+nav.tabs button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+
+section.tab { display: none; }
+section.tab.active { display: block; animation: fade 0.2s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+h2 { font-size: 22px; margin: 0 0 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 17px; margin: 24px 0 12px; color: var(--accent); }
+h4 { font-size: 15px; margin: 16px 0 8px; color: var(--text); }
+p { margin-bottom: 12px; }
+
+.card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px 20px; margin-bottom: 16px;
+}
+.card h3 { margin-top: 0; }
+.card.danger { border-left: 3px solid var(--danger); }
+.card.warning { border-left: 3px solid var(--warning); }
+.card.success { border-left: 3px solid var(--success); }
+.card.accent { border-left: 3px solid var(--accent); }
+.card.info { border-left: 3px solid var(--info); }
+
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+@media (max-width: 900px) { .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: var(--bg3); color: var(--muted); font-weight: 500; font-size: 13px; }
+tr:hover td { background: var(--bg2); }
+
+code { background: var(--bg3); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: var(--accent2); font-family: 'SF Mono', Monaco, Consolas, monospace; }
+pre { background: var(--code-bg); padding: 14px 18px; border-radius: 6px; overflow-x: auto; margin: 12px 0; border: 1px solid var(--border); }
+pre code { background: none; padding: 0; color: var(--text); font-size: 13px; line-height: 1.5; }
+
+ul, ol { padding-left: 22px; margin: 8px 0; }
+li { margin-bottom: 4px; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.badge.critical { background: #3a1a1a; color: var(--danger); }
+.badge.major { background: #3a2a1a; color: var(--warning); }
+.badge.minor { background: #1a2a1a; color: var(--success); }
+.badge.info { background: #1a2a3a; color: var(--accent); }
+
+details.accordion { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; }
+details.accordion > summary { padding: 14px 20px; cursor: pointer; font-weight: 500; list-style: none; }
+details.accordion > summary::marker { content: ''; }
+details.accordion > summary::before { content: '▸ '; color: var(--accent); display: inline-block; transition: transform 0.15s; }
+details.accordion[open] > summary::before { content: '▾ '; }
+details.accordion > summary:hover { background: var(--bg3); }
+details.accordion > .acc-body { padding: 4px 20px 18px; border-top: 1px solid var(--border); }
+
+.gantt-wrap { overflow-x: auto; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+
+.kbd { display: inline-block; padding: 1px 6px; background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; font-size: 11px; font-family: monospace; color: var(--muted); }
+
+footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; text-align: center; }
+footer a { color: var(--accent); text-decoration: none; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+.stat-row { display: flex; gap: 24px; flex-wrap: wrap; margin: 16px 0; }
+.stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; min-width: 140px; }
+.stat .num { font-size: 24px; font-weight: 600; color: var(--accent); display: block; }
+.stat .label { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+<h1>MCP-3D 论文复习 Review Session</h1>
+<div class="status">
+<strong>时间：</strong>2026-05-10 19:30-22:00（会话阶段 8）&nbsp;·&nbsp;
+<strong>当前状态：</strong><span class="pill">W2 ✅</span><span class="pill">W2.5 ⏸️ 暂停</span>&nbsp;·&nbsp;
+<strong>模式：</strong>论文整体复习（故事 ✅ + 鸟瞰 ✅ → 概念 ⏳）
+</div>
+<div class="stat-row">
+<div class="stat"><span class="num">35</span><span class="label">已讨论要点</span></div>
+<div class="stat"><span class="num">5</span><span class="label">用户深度追问</span></div>
+<div class="stat"><span class="num">8</span><span class="label">待修漏洞 G1-G8</span></div>
+<div class="stat"><span class="num">14</span><span class="label">已锁决策 D1-D14</span></div>
+<div class="stat"><span class="num">5</span><span class="label">实证发现 F1-F5</span></div>
+<div class="stat"><span class="num">3</span><span class="label">新建项目文档</span></div>
+</div>
+</header>
+
+<nav class="tabs">
+<button class="active" data-tab="overview">📊 项目概览</button>
+<button data-tab="gantt">📅 16 周时间线</button>
+<button data-tab="contrib">🔬 三贡献</button>
+<button data-tab="qa">💬 5 题答案</button>
+<button data-tab="sop">⚙️ SOP v1.1</button>
+<button data-tab="gaps">🐛 8 条漏洞</button>
+<button data-tab="next">🚀 下一步</button>
+</nav>
+
+<main>
+
+<!-- ============ 项目概览 ============ -->
+<section id="overview" class="tab active">
+<h2>项目概览</h2>
+
+<div class="card accent">
+<h3>一句话目标</h3>
+<p>做 3D 点云的测试时适配 (<code>Test-Time Adaptation, TTA</code>) 方法，让 OpenShape 类零样本分类器在面对分布偏移时保持鲁棒；实验上用可控 benchmark corruptions (scale / rotate / noise) 作为代理和压力测试，且不重训。投稿 AAAI 2027。</p>
+</div>
+
+<div class="grid-2">
+<div class="card danger">
+<h3>🔻 两个痛点 (Motivation)</h3>
+<ol>
+<li><strong>特征余弦盲点</strong> — 现有 TTA 只用特征相似度检索，在可控全局几何 corruption（尤其 ModelNet-C 的 <code>scale</code> family）上可能失效。我们复现 Point-Cache 在 scale 列出现 <strong style="color:var(--danger)">-0.40pp 退化</strong>。</li>
+<li><strong>单点文本锚点</strong> — 表达不了类内多样性，文本先验拟合不足。</li>
+</ol>
+</div>
+
+<div class="card success">
+<h3>🔺 三贡献 (Method)</h3>
+<ul>
+<li><strong>C1 ICP-CD</strong> 几何距离 → 打痛点 1</li>
+<li><strong>C2 vMF</strong> 文本锚点 → 打痛点 2</li>
+<li><strong>C3 2×3 记忆矩阵</strong> → 集成 C1 + C2 的架构载体</li>
+</ul>
+</div>
+</div>
+
+<h3>Figure 1(a) 复现数字（已 commit + tag <code>w2-tta-baseline</code>）</h3>
+<table>
+<thead><tr><th>Bar</th><th>方法</th><th>35-mean</th><th>论文目标</th><th>偏差</th></tr></thead>
+<tbody>
+<tr><td>bar 1</td><td>OpenShape ZS (clean)</td><td><strong>83.27</strong></td><td>84.56</td><td>-1.29pp</td></tr>
+<tr><td>bar 2</td><td>OpenShape ZS (corrupted)</td><td><strong>72.51</strong></td><td>73.49</td><td>-0.98pp</td></tr>
+<tr><td>bar 3</td><td>Point-Cache hierarchical TTA</td><td><strong>75.27</strong></td><td>76.59</td><td>-1.32pp</td></tr>
+</tbody>
+</table>
+<p style="font-size: 13px; color: var(--muted);">→ <strong>系统性 1pp 偏差</strong>，D9 决定接受（不影响 scale 列 trend）。</p>
+
+<h3>F1-F5 关键实验发现</h3>
+<table>
+<thead><tr><th style="width:60px">ID</th><th>发现</th><th>影响哪个 contribution</th></tr></thead>
+<tbody>
+<tr><td><code>F1</code></td><td>Point-Cache hierarchical 在 <code>scale</code> 列退化 <strong>-0.40pp</strong>（4/5 severity 负增益）</td><td>C1 motivation 最强证据</td></tr>
+<tr><td><code>F2</code></td><td>35-mean 系统性低 1pp（bar3: 75.27 vs 76.59）</td><td>baseline 偏差稳定，D9 决定接受</td></tr>
+<tr><td><code>F3</code></td><td>Corruption 模式分三类：scale (global) / rotate (SE3) / noise (local)</td><td>§1 motivation + §3.4 ICP-CD</td></tr>
+<tr><td><code>F4</code></td><td>Hierarchical vs Global cache 增益 +1.48pp</td><td>支持 C3 的层级架构</td></tr>
+<tr><td><code>F5</code></td><td>Paraphrase 模板一致性 > OpenShape 原 template</td><td>C2 vMF 锚点基础</td></tr>
+</tbody>
+</table>
+
+</section>
+
+
+<!-- ============ 16 周时间线 (Gantt) ============ -->
+<section id="gantt" class="tab">
+<h2>16 周 PHASE A 时间线（AAAI 2027 投稿）</h2>
+
+<p>4 个 <code>RISK_GATE</code> (R1-R4) 是提前撤退点，每个都有数值阈值。写作从 W3 起滚动进行，不是最后 2 周才写。</p>
+
+<div class="gantt-wrap">
+<svg viewBox="0 0 1200 520" xmlns="http://www.w3.org/2000/svg" style="width:100%;min-width:900px;">
+  <!-- background -->
+  <rect width="1200" height="520" fill="#161b22"/>
+  <!-- week grid lines -->
+  <g stroke="#30363d" stroke-width="0.5">
+    <line x1="140" y1="40" x2="140" y2="480"/>
+    <line x1="205" y1="40" x2="205" y2="480"/>
+    <line x1="270" y1="40" x2="270" y2="480"/>
+    <line x1="335" y1="40" x2="335" y2="480"/>
+    <line x1="400" y1="40" x2="400" y2="480"/>
+    <line x1="465" y1="40" x2="465" y2="480"/>
+    <line x1="530" y1="40" x2="530" y2="480"/>
+    <line x1="595" y1="40" x2="595" y2="480"/>
+    <line x1="660" y1="40" x2="660" y2="480"/>
+    <line x1="725" y1="40" x2="725" y2="480"/>
+    <line x1="790" y1="40" x2="790" y2="480"/>
+    <line x1="855" y1="40" x2="855" y2="480"/>
+    <line x1="920" y1="40" x2="920" y2="480"/>
+    <line x1="985" y1="40" x2="985" y2="480"/>
+    <line x1="1050" y1="40" x2="1050" y2="480"/>
+    <line x1="1115" y1="40" x2="1115" y2="480"/>
+  </g>
+  <!-- week labels -->
+  <g fill="#8d96a0" font-size="11" font-family="monospace" text-anchor="middle">
+    <text x="172" y="30">W1</text><text x="237" y="30">W2</text><text x="302" y="30">W2.5</text>
+    <text x="367" y="30">W3</text><text x="432" y="30">W4</text><text x="497" y="30">W5</text>
+    <text x="562" y="30">W6</text><text x="627" y="30">W7</text><text x="692" y="30">W8</text>
+    <text x="757" y="30">W9</text><text x="822" y="30">W10</text><text x="887" y="30">W11</text>
+    <text x="952" y="30">W12</text><text x="1017" y="30">W13</text><text x="1082" y="30">W14+</text>
+  </g>
+
+  <!-- row labels -->
+  <g fill="#e6edf3" font-size="13" font-family="sans-serif">
+    <text x="10" y="68">复现基线</text>
+    <text x="10" y="108">W2.5 探针</text>
+    <text x="10" y="148">C2 vMF</text>
+    <text x="10" y="188">C1 ICP-CD</text>
+    <text x="10" y="228">C3 2×3 矩阵</text>
+    <text x="10" y="268">主实验</text>
+    <text x="10" y="308">真实场景</text>
+    <text x="10" y="348">消融+诊断</text>
+    <text x="10" y="388">失败分析</text>
+    <text x="10" y="428">写作收尾</text>
+    <text x="10" y="468">投稿</text>
+  </g>
+
+  <!-- Bars: row 1 复现基线 W1-W2 ✅ -->
+  <rect x="140" y="55" width="130" height="22" fill="#3fb950" rx="3"/>
+  <text x="205" y="70" fill="#0d1117" font-size="11" font-weight="600" text-anchor="middle" font-family="sans-serif">W1-W2 ✅ 已完成</text>
+
+  <!-- Row 2: W2.5 探针 NOW -->
+  <rect x="270" y="95" width="65" height="22" fill="#d29922" rx="3" stroke="#f85149" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="302" y="110" fill="#0d1117" font-size="10" font-weight="600" text-anchor="middle" font-family="sans-serif">P3/P5/P1/P2 ⏸</text>
+
+  <!-- Row 3: C2 vMF W3 -->
+  <rect x="335" y="135" width="65" height="22" fill="#58a6ff" rx="3"/>
+  <text x="367" y="150" fill="#0d1117" font-size="10" font-weight="600" text-anchor="middle" font-family="sans-serif">C2+§3.3</text>
+  <!-- R2 gate -->
+  <circle cx="400" cy="146" r="7" fill="#f85149" stroke="#fff" stroke-width="1"/>
+  <text x="400" y="150" fill="#fff" font-size="9" font-weight="700" text-anchor="middle" font-family="sans-serif">R2</text>
+
+  <!-- Row 4: C1 ICP-CD W4 -->
+  <rect x="400" y="175" width="65" height="22" fill="#58a6ff" rx="3"/>
+  <text x="432" y="190" fill="#0d1117" font-size="10" font-weight="600" text-anchor="middle" font-family="sans-serif">C1+§3.4</text>
+  <circle cx="465" cy="186" r="7" fill="#f85149" stroke="#fff" stroke-width="1"/>
+  <text x="465" y="190" fill="#fff" font-size="9" font-weight="700" text-anchor="middle" font-family="sans-serif">R3</text>
+
+  <!-- Row 5: C3 W5 -->
+  <rect x="465" y="215" width="65" height="22" fill="#58a6ff" rx="3"/>
+  <text x="497" y="230" fill="#0d1117" font-size="10" font-weight="600" text-anchor="middle" font-family="sans-serif">C3+§3.5</text>
+
+  <!-- Row 6: 主实验 W6-W7 -->
+  <rect x="530" y="255" width="130" height="22" fill="#d2a8ff" rx="3"/>
+  <text x="595" y="270" fill="#0d1117" font-size="11" font-weight="600" text-anchor="middle" font-family="sans-serif">ModelNet-C 35 setting + §4.1</text>
+  <circle cx="660" cy="266" r="7" fill="#f85149" stroke="#fff" stroke-width="1"/>
+  <text x="660" y="270" fill="#fff" font-size="9" font-weight="700" text-anchor="middle" font-family="sans-serif">R4</text>
+
+  <!-- Row 7: 真实场景 W8 -->
+  <rect x="660" y="295" width="65" height="22" fill="#d2a8ff" rx="3"/>
+  <text x="692" y="310" fill="#0d1117" font-size="10" font-weight="600" text-anchor="middle" font-family="sans-serif">SONN-C+§4.2</text>
+
+  <!-- Row 8: 消融+诊断 W9-W10 -->
+  <rect x="725" y="335" width="130" height="22" fill="#d2a8ff" rx="3"/>
+  <text x="790" y="350" fill="#0d1117" font-size="11" font-weight="600" text-anchor="middle" font-family="sans-serif">诊断 + BayesMM + §5.1-5.2</text>
+
+  <!-- Row 9: 失败分析 W11-W12 -->
+  <rect x="855" y="375" width="130" height="22" fill="#d2a8ff" rx="3"/>
+  <text x="920" y="390" fill="#0d1117" font-size="11" font-weight="600" text-anchor="middle" font-family="sans-serif">失败案例 + §5.3 + §6</text>
+
+  <!-- Row 10: 写作收尾 W13-W14 -->
+  <rect x="985" y="415" width="130" height="22" fill="#39c5cf" rx="3"/>
+  <text x="1050" y="430" fill="#0d1117" font-size="11" font-weight="600" text-anchor="middle" font-family="sans-serif">abstract/intro polish</text>
+
+  <!-- Row 11: 投稿 W15-W16 -->
+  <rect x="1115" y="455" width="65" height="22" fill="#3fb950" rx="3"/>
+  <text x="1147" y="470" fill="#0d1117" font-size="10" font-weight="700" text-anchor="middle" font-family="sans-serif">🎯 AAAI</text>
+
+  <!-- Legend -->
+  <g transform="translate(20, 495)" font-family="sans-serif" font-size="11" fill="#8d96a0">
+    <rect x="0" y="0" width="14" height="10" fill="#3fb950"/><text x="20" y="9">已完成</text>
+    <rect x="80" y="0" width="14" height="10" fill="#d29922" stroke="#f85149" stroke-dasharray="2,1"/><text x="100" y="9">暂停中</text>
+    <rect x="160" y="0" width="14" height="10" fill="#58a6ff"/><text x="180" y="9">实现阶段</text>
+    <rect x="250" y="0" width="14" height="10" fill="#d2a8ff"/><text x="270" y="9">实验阶段</text>
+    <rect x="340" y="0" width="14" height="10" fill="#39c5cf"/><text x="360" y="9">写作收尾</text>
+    <circle cx="430" cy="5" r="5" fill="#f85149"/><text x="440" y="9">RISK_GATE</text>
+  </g>
+</svg>
+</div>
+
+<div class="grid-2" style="margin-top: 20px;">
+<div class="card warning">
+<h3>4 个 RISK_GATE (提前撤退点)</h3>
+<ul style="font-size: 13px;">
+<li><strong>R1 (W2)</strong> ✅ 已过 — 复现 bar3 35-mean 偏差 ≤ 2pp</li>
+<li><strong>R2 (W3)</strong> ⏳ vMF vs 平均 ≥ 0.1pp → 否则 vMF 降附录</li>
+<li><strong>R3 (W4)</strong> ⏳ ICP-CD scale_2 ≥ ZS → 否则 C1 motivation 倒塌，整体 pivot</li>
+<li><strong>R4 (W6-7)</strong> ⏳ 35-mean ≥ Point-Cache + 0.5pp → 否则重 debug 或重规划</li>
+</ul>
+</div>
+
+<div class="card info">
+<h3>写作触发映射（D12 原则）</h3>
+<ul style="font-size: 13px;">
+<li>W2.5 P1 完成 → §1 motivation (用 F3 + P1)</li>
+<li>W2.5 P2 完成 → §1 motivation (用 F1 + P2)</li>
+<li>W2.5 P5 完成 → §2.1 末段</li>
+<li>W3 → §3.3 vMF anchor</li>
+<li>W4 → §3.4 ICP-CD</li>
+<li>W5 → §3.5 2×3 matrix</li>
+<li>W6-7 → §4.1 main results</li>
+<li>W13-14 → abstract + intro polish</li>
+</ul>
+</div>
+</div>
+
+</section>
+
+
+<!-- ============ 三贡献 ============ -->
+<section id="contrib" class="tab">
+<h2>三贡献 Deep-Dive</h2>
+
+<div class="card">
+<h3>C1 · ICP-CD 几何距离</h3>
+<p><strong>痛点</strong>：特征余弦在部分 benchmark 全局几何 corruption (scale / rotate) 上可能失效。</p>
+<p><strong>方法</strong>：PCA 主轴 + ICP (Iterative Closest Point) 精调 + Chamfer Distance 比较形状。CD 对 scale 归一化点云天然不变。</p>
+<p><strong>实现位置</strong>：<code>model_with_mcp3d.py</code> Section 4 (L~150-250)</p>
+<p><strong>风险闸 R3 (W4)</strong>：ModelNet-C scale_2 severity 上单 ICP-CD 必须 ≥ ZS baseline，否则 C1 的 benchmark motivation 倒塌。</p>
+<p><strong>写作</strong>：§3.4 在 W4 完成</p>
+</div>
+
+<div class="card">
+<h3>C2 · vMF 文本锚点</h3>
+<p><strong>痛点</strong>：单 template 表达不了类内多样性。</p>
+<p><strong>方法</strong>：用 DeepSeek API 生成每类 30 个 paraphrase → CLIP 编码 → 用 <strong>von Mises-Fisher 分布</strong> (球面高斯) 拟合球面分布 → Maximum a Posteriori (MAP) 估计锚点中心 μ 和集中度 κ。</p>
+<p><strong>为什么不在点云侧用 vMF</strong>？样本量对称性 / 算力成本 / 维度差异（详见 Q4）。</p>
+<p><strong>实现位置</strong>：<code>model_with_mcp3d.py</code> Section 3 (L~60-149) + <code>generate_paraphrase.py</code></p>
+<p><strong>风险闸 R2 (W3)</strong>：vMF 精度 vs 简单平均 ≥ 0.1pp，否则 vMF 降附录。</p>
+<p><strong>写作</strong>：§3.3 在 W3 完成</p>
+</div>
+
+<div class="card">
+<h3>C3 · 2×3 记忆矩阵</h3>
+<p><strong>架构载体</strong>：3 列 (ZS anchor / point-cloud cache / boundary memory) × 2 行 (high-conf / low-conf)，6 格各独立贡献一条证据，通过 z-score 跨格融合。</p>
+<p><strong>关键澄清</strong>：低置信度样本 <strong>不是负样本</strong>，是 boundary memory（模糊样本），存 top-k 软标签，作用是校准信号 (Q3 详述)。</p>
+<p><strong>实现位置</strong>：<code>model_with_mcp3d.py</code> Section 6-7</p>
+<p><strong>写作</strong>：§3.5 在 W5 完成，含 leave-one-out 6-cell 消融（修补 G3）</p>
+</div>
+
+<h3>两个额外 contribution (候选独立)</h3>
+<div class="grid-2">
+<div class="card minor">
+<h4>C5 · 紧致度诊断（可能独立）</h4>
+<p>per-class 紧致度 vs per-class 精度 Spearman 相关。W2.5 P2 决定归属（修补 G5）：
+<br/>• 相关强 → C5 独立贡献进 §5.1
+<br/>• 相关弱 → 仅作工具插曲
+</p>
+</div>
+<div class="card minor">
+<h4>MCP-3D++ · BayesMM 跨域（PHASE B）</h4>
+<p>贝叶斯混合模型处理跨数据集，搁置到 W10 或 PHASE B (W17+)。不是主线贡献。</p>
+</div>
+</div>
+
+</section>
+
+
+<!-- ============ 5 题答案 ============ -->
+<section id="qa" class="tab">
+<h2>用户深度追问 5 题</h2>
+<p style="color: var(--muted); font-size: 13px;">点击每个问题展开详细答案。每题都挂接到至少一个 G# 漏洞或 D# 决策。</p>
+
+<details class="accordion" open>
+<summary>Q1 — 痛点像 Related Work，能不能现在就写？另外 F1 (scale 退化) 是不是只在 hierarchical 出现？</summary>
+<div class="acc-body">
+<p><strong>A1 写作侧</strong>：已落地 <code>MCM-PC/docs/paper/02_related_work.md</code> v0.1 草稿，结构 = 3 subsection × "现有工作 → 局限 → 我们的方案"。</p>
+<p><strong>A1 F1 跨方法验证侧</strong>：立项为 <strong>P5 实验</strong> (D13)——在 ModelNet-C scale 5 severity 上跑 global cache TTA（更简单），对比 ZS/global/hierarchical：</p>
+<ul>
+<li>若 global 也退化 → F1 升级为"特征余弦类方法普遍问题" → §2.1 末段强写</li>
+<li>若 global 不退化 → F1 仅限 hierarchical → C1 narrative 调整为"针对层级缓存的退化模式"</li>
+</ul>
+<p><strong>修补漏洞</strong>：G8 (scale 跨方法无证据)</p>
+</div>
+</details>
+
+<details class="accordion">
+<summary>Q2 — 应不应该一边写论文一边跑实验？</summary>
+<div class="acc-body">
+<p><strong>A2</strong>：应该。已锁定 <strong>D12: 写作-实验并行原则</strong>。</p>
+<p><strong>理由（你的洞察）</strong>：</p>
+<ul>
+<li>实验和写作隔太久 → 当时为什么这么设计、数字背后的细节都会忘</li>
+<li>写作过程中暴露的逻辑漏洞 → 立刻反馈到下一个实验设计</li>
+<li>段落 commit 也是里程碑物证（git tag <code>paper-§3.4-draft</code>）</li>
+</ul>
+<p><strong>落地</strong>：建 <code>MCM-PC/docs/paper/</code> + 写 <code>00_outline.md</code> (章节大纲 + 触发-写作映射表) + 写 §2 v0.1 草稿 + 每周 3-5 小时纯写作预算。</p>
+</div>
+</details>
+
+<details class="accordion">
+<summary>Q3 — 2×3 矩阵第二行（低置信度样本）是负样本吗，能不能用损失函数排斥？</summary>
+<div class="acc-body">
+<p><strong>A3</strong>：<strong>不是负样本</strong>，是 <strong>boundary memory（模糊样本）</strong>。</p>
+<h4>不是负样本</h4>
+<ul>
+<li>负样本机制：用损失函数（如 InfoNCE）让特征远离它</li>
+<li>但 MCP-3D 是 TTA 范式 = <strong>免训练 (training-free)</strong> — 没有损失函数</li>
+</ul>
+<h4>是模糊样本 (boundary memory)</h4>
+<ol>
+<li><strong>收集</strong>：top-1 置信度低 (例如 &lt; 0.3) 的样本放进 boundary memory</li>
+<li><strong>存的不只是特征</strong>：还存 top-k 类别软标签 e.g. <code>[chair: 0.4, sofa: 0.35, stool: 0.25]</code></li>
+<li><strong>用法</strong>：新样本和某 boundary 余弦高 → 说明新样本也在"模糊区" → 用 boundary 软标签和主预测加权融合 → 降低主预测置信</li>
+<li><strong>本质</strong>：<strong>校准信号</strong>，告诉 fusion"这个区域不要瞎自信"</li>
+</ol>
+<p><strong>修补漏洞</strong>：G6 (W: docs 没说清 boundary memory) — 复习期间立即可改</p>
+</div>
+</details>
+
+<details class="accordion">
+<summary>Q4 — 为什么 vMF 用在文本不用在点云特征？</summary>
+<div class="acc-body">
+<p>技术上两边都能用 vMF，但只在文本侧用是设计权衡。三个理由：</p>
+<table>
+<thead><tr><th></th><th>文本侧</th><th>点云侧</th></tr></thead>
+<tbody>
+<tr><td><strong>样本量</strong></td><td>每类 ~30 paraphrase，需要参数化分布拟合才稳</td><td>cache 里 ~100-500 同类样本，经验分布够用</td></tr>
+<tr><td><strong>算力</strong></td><td>每类算一次 MAP，可提前算好</td><td>每 batch 更新 cache，每批 N 个类重拟合 vMF 太贵</td></tr>
+<tr><td><strong>维度</strong></td><td>CLIP d=512，中维球面 vMF 拟合稳定</td><td>OpenShape d=1280，vMF 优势衰减</td></tr>
+</tbody>
+</table>
+<p><strong>修补漏洞</strong>：G7 (W: docs 没解释为何不对称使用) — 复习期间立即可改，§3.3 末段加 short paragraph</p>
+</div>
+</details>
+
+<details class="accordion">
+<summary>Q5 — G4 的 "+1~+3pp" 怎么改成更靠谱的目标？</summary>
+<div class="acc-body">
+<p>改三档可验证目标，每档对应不同 paper framing：</p>
+<table>
+<thead><tr><th>档次</th><th>35-mean 增益</th><th>scale 单列</th><th>论文 framing</th></tr></thead>
+<tbody>
+<tr><td><strong>基础线</strong></td><td>≥ +0.5pp</td><td>≥ 0pp</td><td>"首个针对 3D TTA benchmark 全局几何 corruption 盲区的探索"</td></tr>
+<tr><td><strong>目标线</strong></td><td>+1 ~ +3pp</td><td>+1 ~ +3pp</td><td>"新 SOTA + 失败案例修复"（主卖点）</td></tr>
+<tr><td><strong>卓越线</strong></td><td>&gt; +3pp</td><td>&gt; +5pp</td><td>"范式级改进" — AAAI Oral / 期刊延伸</td></tr>
+</tbody>
+</table>
+
+<h4>同类工作历史 anchor（外部参照）</h4>
+<ul>
+<li>TPT (NeurIPS'22) on ImageNet-C: <strong>+1.2pp</strong></li>
+<li>TDA (CVPR'24) zero-shot TTA: <strong>+0.8pp</strong></li>
+<li>Point-Cache original paper ModelNet-C 35-mean: <strong>+3.1pp vs ZS</strong></li>
+</ul>
+<p>→ +1~+3pp 在历史 anchor 上合理，目标线可接受。</p>
+
+<p><strong>修补漏洞</strong>：G4 (S: 增益幅度拍脑袋) — 复习期间立即可改，写进 <code>MCP3D_full_proposal_v2.md</code> 的"期望结果"章节</p>
+</div>
+</details>
+
+</section>
+
+
+<!-- ============ SOP v1.1 ============ -->
+<section id="sop" class="tab">
+<h2>里程碑完成 SOP v1.1</h2>
+<p>详见 <code>MCM-PC/docs/MILESTONE_SOP.md</code>。由用户主动提出 (D14)，固化为流程文档。v1.1 加入文档长度管理规则。</p>
+
+<h3>触发场景</h3>
+<p>每次 W*.* 实验 / 写作 / 重大决策完成后，按 7 步走（约 60-90 min 全流程）。</p>
+
+<h3>核心 7 步</h3>
+<div class="grid-2">
+<div class="card accent">
+<h4>1 · 实验数据归档 (10 min)</h4>
+<ul style="font-size: 13px;">
+<li>关键数字 → <code>key_findings.md</code> F#</li>
+<li>日志 → <code>Point-Cache/results/</code></li>
+<li><code>progress.txt</code> 追加 NOTE</li>
+<li>figure → <code>MCM-PC/figures/</code></li>
+</ul>
+</div>
+<div class="card accent">
+<h4>2 · 论文段落写作 (30-60 min) ⭐</h4>
+<ul style="font-size: 13px;">
+<li>查 <code>00_outline.md</code> 触发映射</li>
+<li>写 <code>docs/paper/0X_*.md</code> v0.X</li>
+<li>按顶会格式自检 (Topic+Evidence+Bridge)</li>
+<li>更新 outline 状态栏</li>
+</ul>
+</div>
+<div class="card accent">
+<h4>3 · 代码 commit + tag (10 min)</h4>
+<ul style="font-size: 13px;">
+<li>feat/fix/docs/test 拆分</li>
+<li>模板见 SOP 附录 B</li>
+<li>打 git tag <code>wN-experiment-name</code></li>
+<li><strong>push 远程</strong>（autodl 临时性）</li>
+</ul>
+</div>
+<div class="card accent">
+<h4>4 · 决策 + 漏洞维护 (10 min)</h4>
+<ul style="font-size: 13px;">
+<li>新 D# → <code>decisions.md</code></li>
+<li>新 G# → <code>doc_gaps.md</code></li>
+<li><strong>重新评估所有待修 G#</strong></li>
+<li>风险闸 R# 自检</li>
+</ul>
+</div>
+<div class="card accent">
+<h4>5 · 会话 + 计划归档 (10 min)</h4>
+<ul style="font-size: 13px;">
+<li><code>chat_summary.md</code> 加阶段 N</li>
+<li>重写 <code>next_steps.md</code></li>
+<li>必要时建 <code>session_YYYY-MM-DD.md</code></li>
+</ul>
+</div>
+<div class="card accent">
+<h4>6 · 审稿人攻击模拟 (10 min)</h4>
+<ul style="font-size: 13px;">
+<li>假装 reviewer 找 3-5 个攻击点</li>
+<li>关联或新建 G# 漏洞</li>
+<li>评估能否 rebut</li>
+</ul>
+</div>
+</div>
+
+<div class="card accent">
+<h4>7 · 下一阶段准备 (5 min)</h4>
+<p>prerequisite 就绪？(GPU / 数据 / API key / 依赖) · 提前预约 · freeze <code>requirements_w*.txt</code></p>
+</div>
+
+<h3>5 个附录</h3>
+<ul>
+<li><strong>附录 A</strong> · 顶会论文段落格式（Topic + Evidence + Bridge / 主动语态 / 数字带单位 / 缩写展开）</li>
+<li><strong>附录 B</strong> · commit/tag 命名约定</li>
+<li><strong>附录 C</strong> · 长期健康（周/月 review + 算力预算 <strong>500 GPU·h</strong>）</li>
+<li><strong>附录 D</strong> · 投稿前 1 周自检（blind submission / license / supplementary）</li>
+<li><strong>附录 E</strong> · SOP 自我演化 + <strong>文档长度规则</strong>（软上限 300 行）</li>
+</ul>
+
+</section>
+
+
+<!-- ============ 8 漏洞 ============ -->
+<section id="gaps" class="tab">
+<h2>已知漏洞 G1-G8</h2>
+<p>详见 <code>windsurf对话/doc_gaps.md</code>。6 类 (L/E/X/W/S/C) × 3 级严重度。每个 W*.* 完成时回看能否修补。</p>
+
+<table>
+<thead><tr><th>ID</th><th>类型</th><th>严重</th><th>描述</th><th>修补路径</th></tr></thead>
+<tbody>
+<tr><td><code>G1</code></td><td>E 证据缺</td><td><span class="badge critical">🔴 Blocker</span></td><td>ICP-CD 假设"geometric aware > cosine aware"无实验证据</td><td>W2.5 P5 + W4 主实验</td></tr>
+<tr><td><code>G2</code></td><td>C 数值</td><td><span class="badge major">🟡 Major</span></td><td>vMF vs 平均锚点区分度未证明</td><td>W3 附录 A 数值仿真</td></tr>
+<tr><td><code>G3</code></td><td>X 消融</td><td><span class="badge major">🟡 Major</span></td><td>6 格子矩阵无 leave-one-out 消融</td><td>W5 leave-one-out</td></tr>
+<tr><td><code>G4</code></td><td>S 拍脑袋</td><td><span class="badge major">🟡 Major</span></td><td>+1~+3pp 增益幅度缺依据</td><td>现在写三档目标（可立即修）</td></tr>
+<tr><td><code>G5</code></td><td>W 定位</td><td><span class="badge minor">🟢 Minor</span></td><td>紧致度作为 contribution 还是工具暧昧</td><td>W9 实验后 + §5 写作</td></tr>
+<tr><td><code>G6</code></td><td>W 表达</td><td><span class="badge minor">🟢 Minor</span></td><td>boundary memory 作用没说清</td><td>§3.5 加 short paragraph（可立即修）</td></tr>
+<tr><td><code>G7</code></td><td>W 表达</td><td><span class="badge minor">🟢 Minor</span></td><td>vMF 为何不用于点云侧没解释</td><td>§3.3 末段（可立即修）</td></tr>
+<tr><td><code>G8</code></td><td>E 证据缺</td><td><span class="badge major">🟡 Major</span></td><td>scale 退化是否跨方法通用</td><td>W2.5 P5</td></tr>
+</tbody>
+</table>
+
+<div class="card accent" style="margin-top: 24px;">
+<h3>🎯 立即可修（复习期间处理）</h3>
+<p><strong>G4 / G6 / G7</strong> — 三个纯写作类漏洞，不需要新实验，在复习下阶段概念时顺手改。预估 1-2 小时。</p>
+</div>
+
+</section>
+
+
+<!-- ============ 下一步 ============ -->
+<section id="next" class="tab">
+<h2>下一步 + 启动咒语</h2>
+
+<div class="card success">
+<h3>✅ 本会话已落盘产出</h3>
+<h4>项目代码侧 (入 git)</h4>
+<table style="font-size: 13px;">
+<tr><td><code>MCM-PC/docs/paper/00_outline.md</code></td><td>~75 行</td><td>论文大纲 + 触发-写作映射表</td></tr>
+<tr><td><code>MCM-PC/docs/paper/02_related_work.md</code></td><td>~95 行</td><td>§2 v0.1 草稿</td></tr>
+<tr><td><code>MCM-PC/docs/MILESTONE_SOP.md</code></td><td>224 行</td><td>v1.1 SOP</td></tr>
+<tr><td><code>MCM-PC/reports/2026-05-10_review_session.html</code></td><td>(本文)</td><td>⭐ HTML review summary</td></tr>
+</table>
+
+<h4>笔记区 (不入 git，自动持久化)</h4>
+<table style="font-size: 13px;">
+<tr><td><code>INDEX.md</code></td><td>121 行</td><td>♻️ 恢复指令 + 长度规则</td></tr>
+<tr><td><code>chat_summary.md</code></td><td>192 行</td><td>♻️ 阶段 8</td></tr>
+<tr><td><code>next_steps.md</code></td><td>198 行</td><td>♻️ W2.5 探针计划</td></tr>
+<tr><td><code>decisions.md</code></td><td>234 行</td><td>♻️ D14 SOP 锁定</td></tr>
+<tr><td><code>doc_gaps.md</code></td><td>101 行</td><td>♻️ G1-G8</td></tr>
+<tr><td><code>session_2026-05-10_evening.md</code></td><td>~180 行</td><td>🆕 今晚详细笔记</td></tr>
+</table>
+</div>
+
+<div class="card warning">
+<h3>🚀 下一步（按用户复习节奏）</h3>
+<ol>
+<li><strong>先 commit + push</strong>（防 autodl 容器数据丢失）</li>
+<li>消化 §2 Related Work v0.1 草稿 + SOP v1.1 + 本 HTML review</li>
+<li>进入<strong>第三阶段「概念」</strong>：从 <code>MCM-PC/docs/concepts/00_overview.md</code> 开始</li>
+<li>概念复习完 → 启动 W2.5 P3 → P5 → P1 → P2</li>
+</ol>
+</div>
+
+<h3>推荐 commit 命令</h3>
+<pre><code>cd /root/autodl-tmp/MCM-PC
+
+git add docs/paper/00_outline.md \
+        docs/paper/02_related_work.md \
+        docs/MILESTONE_SOP.md \
+        reports/2026-05-10_review_session.html
+
+git commit -m "docs: bootstrap paper drafts + SOP v1.1 + HTML review report (D12, D14, D15)
+
+- docs/paper/00_outline.md: paper structure + trigger-writing map
+- docs/paper/02_related_work.md: §2 first draft (v0.1)
+- docs/MILESTONE_SOP.md: 7-step SOP v1.1 (with doc length rules)
+- reports/2026-05-10_review_session.html: first HTML review deliverable
+  following Thariq's 'Using Claude Code: Effectiveness of HTML' principles
+"
+
+git tag paper-bootstrap -m "Paper drafts + SOP v1.1 baseline"
+git push origin master --tags</code></pre>
+
+<h3>新会话恢复咒语（保留此对话，以后真需要新开时用）</h3>
+<pre><code>请按以下顺序读取文件恢复 MCP-3D 项目背景：
+
+# 必读
+1. /root/autodl-tmp/windsurf对话/INDEX.md
+2. /root/autodl-tmp/windsurf对话/user_preferences.md
+3. /root/autodl-tmp/MCM-PC/docs/MILESTONE_SOP.md
+4. /root/autodl-tmp/windsurf对话/chat_summary.md
+5. /root/autodl-tmp/windsurf对话/next_steps.md
+6. /root/autodl-tmp/windsurf对话/decisions.md
+7. /root/autodl-tmp/windsurf对话/doc_gaps.md
+8. /root/autodl-tmp/windsurf对话/key_findings.md
+
+# 最新会话脉络
+9. /root/autodl-tmp/windsurf对话/session_2026-05-10_evening.md
+
+# 可选：查看 HTML review
+浏览器打开 /root/autodl-tmp/MCM-PC/reports/2026-05-10_review_session.html</code></pre>
+
+</section>
+
+</main>
+
+<footer>
+<p>MCP-3D 项目 · 2026-05-10 晚 Review Session · 遵循 <a href="https://x.com/trq212/status/2052809885763747935" target="_blank">Thariq "HTML > Markdown for complex agent outputs"</a></p>
+<p style="margin-top: 8px;">文档源：<code>MCM-PC/reports/2026-05-10_review_session.html</code> · 项目根：<code>/root/autodl-tmp/MCM-PC/</code></p>
+</footer>
+
+<script>
+// Tab switching
+const buttons = document.querySelectorAll('nav.tabs button');
+const tabs = document.querySelectorAll('section.tab');
+buttons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.tab;
+    buttons.forEach(b => b.classList.remove('active'));
+    tabs.forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(target).classList.add('active');
+    // Update URL hash
+    history.replaceState(null, '', '#' + target);
+  });
+});
+// Restore tab from URL hash on load
+const hash = window.location.hash.substring(1);
+if (hash) {
+  const targetBtn = document.querySelector('nav.tabs button[data-tab="' + hash + '"]');
+  if (targetBtn) targetBtn.click();
+}
+</script>
+
+</body>
+</html>

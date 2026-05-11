@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MCP-3D Concepts 00 Overview</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2f;
+      --panel-2: #18233d;
+      --text: #e8eefc;
+      --muted: #9fb0d0;
+      --line: #2a385c;
+      --blue: #6ea8fe;
+      --cyan: #5eead4;
+      --green: #86efac;
+      --yellow: #fde68a;
+      --red: #fca5a5;
+      --purple: #c4b5fd;
+      --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, rgba(94, 234, 212, 0.13), transparent 30%), var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    header {
+      padding: 56px 24px 28px;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .eyebrow { color: var(--cyan); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 13px; }
+    h1 { font-size: clamp(32px, 5vw, 56px); line-height: 1.08; margin: 10px 0 16px; }
+    .subtitle { color: var(--muted); max-width: 850px; font-size: 18px; }
+    main { max-width: 1180px; margin: 0 auto; padding: 12px 24px 70px; }
+    .grid { display: grid; gap: 18px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.02)), var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .card h2, .card h3 { margin-top: 0; line-height: 1.25; }
+    .muted { color: var(--muted); }
+    .tag { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; color: var(--muted); font-size: 13px; margin: 4px 6px 4px 0; }
+    .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px; }
+    .step { background: var(--panel-2); border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+    .step strong { color: var(--cyan); }
+    .arrow { text-align: center; color: var(--muted); font-size: 26px; margin: -4px 0; }
+    .weakness { border-left: 4px solid var(--red); }
+    .solution { border-left: 4px solid var(--green); }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 16px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 13px 12px; text-align: left; vertical-align: top; }
+    th { color: var(--cyan); background: rgba(94,234,212,.08); }
+    tr:last-child td { border-bottom: 0; }
+    .risk-high { color: var(--red); font-weight: 700; }
+    .risk-mid { color: var(--yellow); font-weight: 700; }
+    .risk-low { color: var(--green); font-weight: 700; }
+    .matrix { display: grid; grid-template-columns: 130px repeat(2, 1fr); gap: 8px; }
+    .cell { background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 14px; min-height: 84px; }
+    .head { color: var(--cyan); font-weight: 800; text-align: center; }
+    .rowhead { color: var(--purple); font-weight: 800; }
+    .formula { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #080d1a; border: 1px solid var(--line); border-radius: 16px; padding: 16px; overflow-x: auto; color: #dbeafe; }
+    details { background: var(--panel-2); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+    details + details { margin-top: 12px; }
+    summary { cursor: pointer; font-weight: 800; color: var(--cyan); }
+    .nav { position: sticky; top: 0; z-index: 3; backdrop-filter: blur(14px); background: rgba(11,16,32,.78); border-bottom: 1px solid var(--line); }
+    .nav-inner { max-width: 1180px; margin: 0 auto; padding: 10px 24px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .nav a { color: var(--muted); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 11px; font-size: 13px; }
+    .nav a:hover { color: var(--text); border-color: var(--cyan); }
+    @media (max-width: 860px) { .grid.two, .grid.three, .flow { grid-template-columns: 1fr; } .matrix { grid-template-columns: 1fr; } .head { text-align: left; } }
+  </style>
+</head>
+<body>
+  <nav class="nav"><div class="nav-inner">
+    <a href="#problem">问题</a><a href="#why3d">3D 难点</a><a href="#pointcache">Point-Cache</a><a href="#weakness">软肋</a><a href="#contrib">贡献</a><a href="#matrix">2×3 矩阵</a><a href="#next">下一步</a>
+  </div></nav>
+  <header>
+    <div class="eyebrow">MCP-3D Paper Review · Concepts Phase</div>
+    <h1>概念 00：从全貌进入 MCP-3D</h1>
+    <p class="subtitle">这一页不是推公式，而是建立论文主线的概念地图：我们到底在解决什么问题，为什么 Point-Cache 不够，MCP-3D 的贡献如何对应这些软肋。</p>
+    <div><span class="tag">来源：docs/concepts/00_overview.md</span><span class="tag">阅读目标：5 分钟建立全局坐标</span><span class="tag">阶段：故事 → 鸟瞰 → 概念</span></div>
+  </header>
+  <main class="grid">
+    <section id="problem" class="card">
+      <h2>1. 问题定义：3D 点云的 Test-Time Adaptation</h2>
+      <div class="flow">
+        <div class="step"><strong>训练时</strong><br/>模型见到的是干净数据，例如 ModelNet 的 CAD 点云。</div>
+        <div class="step"><strong>部署 / 评测时</strong><br/>真实挑战是分布偏移；benchmark 用 jitter、dropout、rotate、scale 等人工 corruptions 做可控代理和压力测试。</div>
+        <div class="step"><strong>目标</strong><br/>测试时边推理边适应，但不改参数、不用标签。</div>
+      </div>
+      <p class="muted">论文里要抓住一句话：TTA 不是重新训练模型，而是在测试流中利用当前样本和记忆来修正预测。</p>
+    </section>
+
+    <section id="why3d" class="grid two">
+      <div class="card">
+        <h2>2. 为什么 3D 比 2D 更难</h2>
+        <p>3D 点云不只是“图像换个模态”，它多了几何结构。人工构造的旋转、尺度变化、点缺失等 corruption 会直接改变坐标分布，进而影响 3D encoder 的 feature。</p>
+        <div class="formula">2D: pixel layout changes, semantic content often stable<br/>3D: (x, y, z) geometry changes, feature may drift strongly</div>
+      </div>
+      <div class="card">
+        <h2>论文写作锚点</h2>
+        <p>如果 feature 距离在可控几何 corruption stress test 下失灵，那么只依赖 feature cache 的方法会有结构性风险。</p>
+        <p class="muted">这就是 MCP-3D 引入 ICP-CD 的根本动机：直接补一条几何证据链。</p>
+      </div>
+    </section>
+
+    <section id="pointcache" class="card">
+      <h2>3. 现有 SOTA：Point-Cache 的基本机制</h2>
+      <div class="flow">
+        <div class="step"><strong>Step 1</strong><br/>新点云 X 进入 3D-VLM，得到 feature z。</div>
+        <div class="step"><strong>Step 2</strong><br/>z 与记忆库中每类 anchor feature 比较距离。</div>
+        <div class="step"><strong>Step 3</strong><br/>用高置信预测更新 memory，辅助后续测试样本。</div>
+      </div>
+      <p class="muted">Point-Cache 的强处是简单有效；MCP-3D 的论文不能否定它，而要说明：它在几何 corruption benchmark 下还有可补强的空间。</p>
+    </section>
+
+    <section id="weakness" class="grid three">
+      <div class="card weakness">
+        <h3>软肋 1：文本锚点不够准</h3>
+        <p>固定模板做算术平均，忽略 CLIP 类特征位于单位球面这一事实。</p>
+        <p><strong>对应解法：</strong>vMF MAP 文本锚点。把同一类别的多条 prompt 看成球面上的样本，用 vMF 分布估计更合理的类别方向，避免普通平均把 anchor 拉偏。</p>
+      </div>
+      <div class="card weakness">
+        <h3>软肋 2：feature 距离怕几何破坏</h3>
+        <p>旋转、缺失、尺度变化可能把同类点云推到远离原 anchor 的区域。</p>
+        <p><strong>对应解法：</strong>ICP + Chamfer Distance。先用 ICP 对齐两个点云，再用 Chamfer Distance 比较形状差异，为 feature 相似度之外补一条几何证据。</p>
+      </div>
+      <div class="card weakness">
+        <h3>软肋 3：不知道 memory 是否在变坏</h3>
+        <p>测试流更新可能导致记忆库逐渐发散，最后反过来污染预测。</p>
+        <p><strong>对应解法：</strong>compactness diagnosis。定期测量同类 memory 是否仍然聚在一起；如果类内距离变大、紧致性下降，就说明 memory 可能被错误样本污染。</p>
+      </div>
+    </section>
+
+    <section id="contrib" class="card">
+      <h2>4. MCP-3D 的贡献结构</h2>
+      <table>
+        <thead><tr><th>编号</th><th>贡献</th><th>论文角色</th><th>风险等级</th></tr></thead>
+        <tbody>
+          <tr><td>C1</td><td>ICP-CD 几何距离</td><td>方法创新，补 feature 失败</td><td class="risk-high">高：需要实验证明 feature 确实失败</td></tr>
+          <tr><td>C2</td><td>紧致性诊断</td><td>科学发现，解释 memory 何时变坏</td><td class="risk-mid">中：避免标签泄露</td></tr>
+          <tr><td>C3</td><td>2×3 记忆矩阵</td><td>工程整合，多证据融合</td><td class="risk-mid">中：必须做 leave-one-out</td></tr>
+          <tr><td>C4</td><td>vMF 文本锚点</td><td>数学严谨化，替代普通均值</td><td class="risk-low">低：理论依据稳定</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="matrix" class="card">
+      <h2>5. 2×3 Memory Matrix：把证据组织起来</h2>
+      <div class="matrix">
+        <div class="cell"></div><div class="cell head">Global<br/><span class="muted">整个点云</span></div><div class="cell head">Local<br/><span class="muted">patch 级别</span></div>
+        <div class="cell rowhead">Confidence</div><div class="cell">global_conf<br/><span class="muted">低 entropy 的整体样本</span></div><div class="cell">local_conf<br/><span class="muted">低 entropy 的局部 patch</span></div>
+        <div class="cell rowhead">Compactness</div><div class="cell">global_comp<br/><span class="muted">ICP-CD 小的整体形状</span></div><div class="cell">local_comp<br/><span class="muted">patch CD 小的局部形状</span></div>
+        <div class="cell rowhead">Boundary</div><div class="cell">global_bnd<br/><span class="muted">中 entropy 的边界样本</span></div><div class="cell">local_bnd<br/><span class="muted">中 entropy 的边界 patch</span></div>
+      </div>
+      <p class="formula">final_logits = text_logits + positive memory evidence - boundary calibration evidence</p>
+      <p class="muted">注意：boundary memory 不是“负样本库”，而是记录不稳定区域，用来校准过度自信。</p>
+    </section>
+
+    <section class="grid two">
+      <div class="card solution">
+        <h2>6. 项目故事一句话</h2>
+        <p><strong>3D 点云 TTA 有几何扰动、memory 漂移、文本锚点不严谨三个问题；MCP-3D 用 ICP-CD、compactness diagnosis、2×3 memory matrix 和 vMF anchor 形成几何感知的多记忆框架，目标是在 ModelNet-C / ScanObjectNN-C 上稳定超过 Point-Cache。</strong></p>
+      </div>
+      <div id="next" class="card">
+        <h2>7. 下一步概念复习顺序</h2>
+        <details open><summary>01 vMF Text Anchor</summary><p>解决“文本类锚点如何更符合球面特征空间”的问题。</p></details>
+        <details><summary>02 ICP-CD Geometry Distance</summary><p>解决“feature 距离失灵时如何引入原始几何证据”的问题。</p></details>
+        <details><summary>03 Compactness Diagnosis</summary><p>解释 memory 什么时候变散，以及如何和性能下降关联。</p></details>
+        <details><summary>04 2×3 Memory Matrix</summary><p>把 confidence、compactness、boundary 与 global/local 组织成最终方法。</p></details>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

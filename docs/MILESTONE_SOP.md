@@ -6,7 +6,7 @@
 >
 > **维护**：本 SOP 由用户和 Cascade 共同维护。新经验追加到附录 E (changelog)。
 >
-> **版本**：v1.0 (2026-05-10)
+> **版本**：v1.3 (2026-05-11)
 
 ---
 
@@ -32,10 +32,18 @@
 ### 步骤 2 — 论文段落写作（约 30-60 min）
 
 > 严格按 AAAI / CVPR 论文格式写。详见**附录 A**。
+>
+> **D18 规则**（2026-05-11 加入）：除了里程碑触发的写作外，**任何**经过理论或实验验证的新思路，一旦 Cascade 分析为合理，应当**立即**写入对应论文草稿（图表也用占位符先入位）。HTML 讲义 / 概念笔记不算已写入论文。
 
 - [ ] 查 `docs/paper/00_outline.md` **触发-写作映射表**，确认要写哪个 §X.Y
 - [ ] 写第一稿到 `docs/paper/0X_*.md`（版本号 v0.1 → v0.2 递增）
 - [ ] 用附录 A 自检每段格式
+- [ ] **D18 自检**：
+    - [ ] 这个 idea 是理论验证 / 实验验证 / 用户口头确认的哪一类？
+    - [ ] 与现有 D# / G# / F# 是否一致？
+    - [ ] 应落到哪个章节？需不需要新建图/表？
+    - [ ] 证据强度标签：`preliminary observation` / `hypothesis` / `claim` / `contribution`？
+    - [ ] 图表用 `[Tab. N: 描述]` / `[Fig. N: 描述]` 占位 + 来源说明（不要等数据齐才落）
 - [ ] `00_outline.md` 状态栏更新（⏳ → 🟡 v0.X → ✅）
 
 ### 步骤 3 — 代码 commit + tag（约 10 min）
@@ -76,9 +84,33 @@
 
 ---
 
-## 附录 A：顶会论文段落写作格式规范
+## 附录 A：输出格式分层规则 + 顶会论文段落写作格式规范
 
-### A.1 段落结构（IMRaD-friendly: Topic + Evidence + Bridge）
+### A.0 输出格式分层（D15 锁定，2026-05-10 晚）
+
+每次产出前先判断读者是谁：
+
+| 产出类型 | 格式 | 位置 |
+|---|---|---|
+| **概念解释** / **进度报告** / **W*.* 结果报告** / **代码 review** / **design prototype** | **HTML** ⭐ | `MCM-PC/reports/YYYY-MM-DD_主题.html` |
+| Cascade 自读的笔记（`windsurf对话/*.md`）、SOP、短 checklist、决策/漏洞列表 | Markdown | `windsurf对话/` 或 `MCM-PC/docs/` |
+| 论文正稿（`docs/paper/*.md`） | Markdown → 最后 LaTeX | `MCM-PC/docs/paper/` |
+| paper outline / 章节映射 / 快速表格 | Markdown | `MCM-PC/docs/paper/` |
+
+**HTML 规格**：
+- self-contained single file（内联 CSS + JS，无 CDN 依赖）
+- dark mode + responsive + tab navigation（复杂内容）
+- SVG 为矢量（gantt / flowchart / spatial）
+- `<details><summary>` accordion 处理长 Q&A
+- 文件大小 ≤ 150 KB（纯文本 + SVG，不嵌图片）
+
+**参考首个 demo**：`MCM-PC/reports/2026-05-10_review_session.html`
+
+---
+
+### A.1 顶会论文段落写作格式规范
+
+#### 段落结构（IMRaD-friendly: Topic + Evidence + Bridge）
 
 每段约 80-150 词：
 
@@ -189,6 +221,18 @@
 
 → 预算约 500 GPU·h（双卡总和）= 250 真实小时 / 双卡 = 约 10.4 天连续。**每周硬限 30 GPU·h**，超支立即报警。
 
+### C.4 双卡并行默认（D20 / user_preferences No.10，2026-05-11）
+
+所有新建的 eval / ablation / smoke 脚本默认双卡并行写法：
+
+- **2 个 job** → GPU 0 ∥ GPU 1 后台同时跑，最后 `wait`
+- **N > 2 个 job** → `for ((i=0; i<N; i+=2))` batch 循环
+- **1 个 job 无法并行** → 默认 GPU 0，写清理由
+
+允许单卡的例外：单 job 显存 > 14GB / 对齐他人单卡 baseline / 调试性质 <30s。
+
+每写一个脚本自检：用到两卡了吗？没用到就注明理由。
+
 ---
 
 ## 附录 D：投稿前 1 周自检
@@ -221,3 +265,5 @@
 
 - **v1.0 (2026-05-10 21:30)**：初版。基于 W2 复现完成 + 用户主动提出"流程化"需求，将 D9-D14 的隐性实践经验固化为显性 SOP。
 - **v1.1 (2026-05-10 22:00)**：用户提出"文档太长可拆分编号"，加入"文档长度管理规则"段，软上限 300 行。
+- **v1.2 (2026-05-11 10:51)**：用户加 D18 规则——经理论或实验验证的新思路必须立即落到 `docs/paper/`（含图表占位）。SOP 步骤 2 内嵌 D18 自检 checklist；HTML 讲义 / 概念笔记不再视为论文落盘。
+- **v1.3 (2026-05-11 11:21)**：用户加 D20 / user_preferences No.10 ——驱动脚本默认双卡并行。附录 C 加 C.4 段。
