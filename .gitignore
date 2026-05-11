@@ -194,3 +194,15 @@ Thumbs.db
 *.out
 *.err
 nohup.out
+
+# Exception: keep experiment logs under Point-Cache/logs/ tracked, so the
+# D19/D20/P1 fast-track artefacts remain reproducible. The matching files
+# are .log/.txt that we DO want under version control.
+!Point-Cache/logs/**/*.log
+!Point-Cache/logs/**/*.txt
+!Point-Cache/logs/**/*.json
+# Also keep P1 probe output reports (markdown + json summaries) but not the
+# heavy feature .npy dumps (those live under reports/p1_features/).
+Point-Cache/reports/p1_features/
+Point-Cache/reports/p1_features_smoke/
+Point-Cache/reports/_run_logs/
