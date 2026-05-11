@@ -3,16 +3,18 @@
 > **状态**：早期草稿，每个 [需补 X] 占位符等具体实验/citation 完成后填。
 >
 > **更新触发**：每次完成一个相关工作的对照实验，回来扩写对应段落。
+>
+> **与 §1 的呼应 (D17)**：本节同时为 §1.2 提出的 *diagnosis-driven analysis of negative adaptation in cache-based 3D TTA* 提供支撑：每一段 "局限" 都对应一个未来由探针实验 (P1 / P2 / P5) 验证的诊断假设，而非纯粹的方法对比。
 
 ---
 
 ## 2.1 测试时适配在 3D 识别中的应用 (Test-Time Adaptation for 3D Recognition)
 
-3D 识别系统在部署后常面临训练分布之外的扰动——扫描设备噪声、采样点缺失、尺度归一化误差等。**测试时适配** (Test-Time Adaptation, TTA) 旨在不改变模型权重的前提下，于推理阶段自适应地调整模型行为。
+3D 识别系统在部署后常面临训练分布之外的扰动——扫描设备噪声、采样点缺失、姿态变化、尺度归一化误差等。标准鲁棒性 benchmark（如 ModelNet-C / ScanObjectNN-C）进一步将这些现实因素抽象成手工设计的 corruption families，用作可控代理任务和压力测试。**测试时适配** (Test-Time Adaptation, TTA) 旨在不改变模型权重的前提下，于推理阶段自适应地调整模型行为。
 
 早期 3D TTA 方法 (T3A [需补 ref]、TENT-3D [需补 ref]、MEMO-3D [需补 ref]) 多由二维 TTA 直接迁移，依赖批次统计量重校准或熵最小化损失。这些方法假设有同分布的小批次数据，与真实部署中的样本流式到达不符。**Point-Cache** [需补 ref, 2024] 提出基于缓存 (cache) 的免训练 TTA：维护历史样本的特征库，新样本通过 K 近邻 (K-Nearest Neighbors, KNN) 检索得到软标签作为辅助信号。其层级化变体 (hierarchical) 进一步将缓存按全局/局部特征分组，在 ModelNet-C 上取得 76.59% 的 35-setting 平均准确率。
 
-**局限**：上述方法的样本-cache 关联完全建立在**特征余弦相似度**上。我们在复现实验中观察到一个未被以往工作单独讨论的现象 (本文 §4.1, F1)：**在 scale 类全局形变下，Point-Cache hierarchical TTA 反而比零样本基线退化 -0.40pp** (5 个 severity 中 4 个为负增益)。这一现象的机制在于 scale 是整体特征流形的偏移，特征空间的近邻检索难以识别"被同样污染"的历史样本——反而把它们当作"同类"用于投票，加重错误。本文 C1 (ICP-CD 几何距离) 通过引入与特征空间正交的几何信号弥补这一盲区。
+**局限**：上述方法的样本-cache 关联完全建立在**特征余弦相似度**上。我们在复现实验中观察到一个未被以往工作单独讨论的 benchmark 现象 (本文 §4.1, F1)：**在 ModelNet-C 的 scale corruption family 下，Point-Cache hierarchical TTA 反而比零样本基线退化 -0.40pp** (5 个 severity 中 4 个为负增益)。该结果应被理解为可控压力测试中的失败案例，而不是对现实世界尺度分布偏移的直接等价声明。其机制假设是：在该人工 scale 协议下，整体几何变换可能诱发特征流形偏移，使基于特征近邻的 cache 检索把同样受污染的历史样本当作可靠投票源。本文 C1 (ICP-CD 几何距离) 通过引入与特征空间正交的几何信号弥补这一盲区。
 
 [需补：W2.5 P5 完成后追加跨方法 (global cache vs hierarchical) / 跨 backbone (OpenShape vs ULIP-2) 的退化证据，确认现象普遍性]
 
@@ -42,7 +44,7 @@
 
 | Related Work 局限 | 本文贡献 | 实证依据 |
 |---|---|---|
-| §2.1 特征余弦在 scale 类全局形变下失效 | C1 ICP-CD 几何距离 | F1 (-0.40pp), W4 主实验 |
+| §2.1 特征余弦在 benchmark scale 类全局 corruption 下存在失效风险 | C1 ICP-CD 几何距离 | F1 (-0.40pp), W4 主实验 |
 | §2.2 单一文本锚点缺乏多样性 | C2 vMF 文本锚点 | W3 vMF vs 单点 ablation |
 | §2.3 缓存维度单一 (信心 ⊻ 层级) | C3 2×3 记忆矩阵 (信心 × 信号源) | W5 6-cell leave-one-out |
 

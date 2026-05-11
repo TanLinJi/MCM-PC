@@ -8,7 +8,7 @@
 
 | 章节 | 内容 | 触发条件 | 状态 | 字数目标 |
 |---|---|---|---|---|
-| §1 Introduction | 动机 + 贡献概览 | W2.5 P1+P2 完成 | ⏳ blocked | ~1000 |
+| §1 Introduction | 动机 + 贡献概览 + diagnosis-driven framing | D17 落地 (现有) → P1/P2/P5 后回填数字 | 🟡 **v0.1 骨架草稿** | ~1000 |
 | §2 Related Work | 3D 测试时适配 / 零样本 / 缓存架构 | 已有 F1-F5 | 🟡 **v0.1 草稿** | ~1500 |
 | §3 Method | C1 ICP-CD / C2 vMF / C3 2×3 矩阵 | W3-W5 各自完成 | ⏳ blocked | ~3000 |
 | §4 Experiments | ModelNet-C / ScanObjectNN-C / 消融 | W6-W10 完成 | ⏳ blocked | ~2500 |
@@ -55,4 +55,5 @@ W15-16      → 投稿润色 (AAAI)
 ```
 
 ## 当前进度
-- §2 Related Work draft v0.1 (本次 2026-05-10 落盘) - 见 `02_related_work.md`
+- §1 Introduction draft v0.1 骨架（2026-05-11 落盘）— 见 `01_introduction.md`，已落地 D17 *diagnosis-driven* 句作为 §1.2 主题陈述与 contribution 串联；数字部分等 P1/P2/P5 回填
+- §2 Related Work draft v0.1 (2026-05-10 落盘) — 见 `02_related_work.md`，新增对 §1.2 的呼应段
