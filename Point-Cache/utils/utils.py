@@ -113,6 +113,37 @@ def get_arguments():
     parser.add_argument("--obj-id", type=int, default=0, help="object id when visualizing all patches and the clustering"
                         "centers of a 3D object")
 
+    # D19 P4-fast-track: hierarchical + raw ICP-CD geometric logits.
+    # All flags are optional and default to bar3-equivalent behaviour, so adding
+    # them here is backward-compatible with zs_infer.py / model_with_global_cache.py /
+    # model_with_hierarchical_caches.py.
+    parser.add_argument('--enable_geom_cache', action='store_true',
+                        help='[D19] add raw ICP-CD geometric logits term (only used by model_with_hierarchical_icpcd.py).')
+    parser.add_argument('--geom_alpha', type=float, default=6.0,
+                        help='[D19 v0.1.1] alpha weight for geom-cache logits. v0.1 default was 2.0; v0.1.1 raised to 6.0 to match lcache magnitude (see debug log 113710).')
+    parser.add_argument('--geom_beta', type=float, default=5.0,
+                        help='[D19] beta sharpness for geom-cache logits.')
+    parser.add_argument('--geom_zero_mean', action='store_true', default=True,
+                        help='[D19 v0.1.1] subtract mean(geom_logits) before adding to final logits — turns geom into a relative ranking vote rather than a positive bias (default ON).')
+    parser.add_argument('--no_geom_zero_mean', dest='geom_zero_mean',
+                        action='store_false', help='[D19] disable zero-mean (v0.1 behaviour, additive only).')
+    parser.add_argument('--geom_estimate_scale', action='store_true', default=True,
+                        help='[D19] let ICP estimate scale (default ON; recommended for scale corruption).')
+    parser.add_argument('--no_geom_estimate_scale', dest='geom_estimate_scale',
+                        action='store_false', help='[D19] disable ICP scale estimation.')
+    parser.add_argument('--geom_max_iter', type=int, default=20,
+                        help='[D19] ICP iteration cap.')
+    parser.add_argument('--geom_entropy_threshold', type=float, default=0.10,
+                        help='[D19 v0.1.3] only apply geom logits when prop_entropy >= this threshold. v0.1.2 used 0.5 (0/50 passed); v0.1.3 lowered to 0.10 per X-ray data (18/50 passes, ratio 6.52x). See docs/D19_design_rationale.md §5.')
+    parser.add_argument('--max_samples', type=int, default=-1,
+                        help='[D19 smoke] if > 0, stop online TTA loop after this many samples. -1 = no limit.')
+    parser.add_argument('--log_geom_timing', action='store_true',
+                        help='[D19 smoke] log per-sample ICP-CD wall time to stdout.')
+    parser.add_argument('--geom_debug_steps', type=int, default=0,
+                        help='[D19 v0.1.1] for the first N samples, print per-source logits magnitudes and CD/affinity/geom-logits stats. 0 = disabled.')
+    parser.add_argument('--log_sample_info', action='store_true',
+                        help='[D19 v0.1.3] for EVERY sample, print a one-line [sample-info] with (i, entropy, pred, target, correct, gate). Use this to analyze entropy vs error rate.')
+
     args = parser.parse_args()
 
     return args
