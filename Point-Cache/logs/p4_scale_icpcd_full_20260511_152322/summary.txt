@@ -1,0 +1,27 @@
+  scale_2    | 78.16.         | 76.46.           | -1.70     
+
+[full-aggregate] === [X-ray] baseline entropy distribution & error rate by bin ===
+  bin                 |  baseline n |  base_err% | geom n |  geom_err% |  Δerr (geom - base)
+  --------------------+-------------+------------+--------+------------+-------------------
+  [0.00, 0.05)        |    1289     |     2.9    |  1289  |     2.9    |   +0.0
+  [0.05, 0.10)        |     279     |    21.1    |   279  |    21.1    |   +0.0
+  [0.10, 0.15)        |     282     |    40.8    |   282  |    44.0    |   +3.2
+  [0.15, 0.20)        |     201     |    41.8    |   201  |    45.3    |   +3.5
+  [0.20, 0.30)        |     257     |    52.1    |   257  |    56.4    |   +4.3
+  [0.30, 1.00)        |     160     |    68.8    |   160  |    78.1    |   +9.3
+
+[full-aggregate] === [X-ray] aggregate baseline error rate (entropy < / >= threshold) ===
+  threshold=0.10:  low-ent  n=1568 err=  6.1%  |  high-ent n= 900 err= 49.2%  |  ratio=8.04x
+  threshold=0.15:  low-ent  n=1850 err= 11.4%  |  high-ent n= 618 err= 53.1%  |  ratio=4.65x
+  threshold=0.20:  low-ent  n=2051 err= 14.4%  |  high-ent n= 417 err= 58.5%  |  ratio=4.07x
+  threshold=0.30:  low-ent  n=2308 err= 18.6%  |  high-ent n= 160 err= 68.8%  |  ratio=3.70x
+
+[full-aggregate] === [X-ray] geom impact (gate=PASS samples only) ===
+  total 2468  gate_PASS=900  gate_SKIP=1568
+  on PASS samples:  rescued (base wrong → geom right) = 57  broken (base right → geom wrong) = 99  net = -42
+
+[full-aggregate] === [X-ray] per-bin gate=PASS net (D19 §9.1.5 verification) ===
+  bin [0.10, 0.15):  PASS n= 282  rescued=16  broken=25  net=-9
+  bin [0.15, 0.20):  PASS n= 201  rescued=13  broken=20  net=-7
+  bin [0.20, 0.30):  PASS n= 257  rescued=18  broken=29  net=-11
+  bin [0.30, 1.00):  PASS n= 160  rescued=10  broken=25  net=-15
