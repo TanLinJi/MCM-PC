@@ -1,0 +1,56 @@
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /root/autodl-tmp/MCM-PC/Point-Cache/wandb/offline-run-20260510_155335-soqmf053
+
+ --------------------
+	clip_params: 2539567105
+
+ --------------------
+	lm3d_params: 32326080
+
+ --------------------
+	total_params: 2571893185 
+
+Processing modelnet_c dataset.
+
+cfg['positive']['shot_capacity']: 3 
+
+n_cluster in KMeans: 3 
+
+`alpha` for cache weights: 4.0 
+
+`beta` for cache attention sharpness: 3.0 
+
+
+Running dataset configurations:
+{'positive': {'enabled': True, 'shot_capacity': 3, 'alpha': 4.0, 'beta': 3.0}, 'negative': {'enabled': True, 'shot_capacity': 2, 'alpha': 0.117, 'beta': 1.0, 'entropy_threshold': {'lower': 0.2, 'upper': 0.5}, 'mask_threshold': {'lower': 0.03, 'upper': 1.0}}} 
+
+>>> classnames: ['airplane', 'bathtub', 'bed', 'bench', 'bookshelf', 'bottle', 'bowl', 'car', 'chair', 'cone', 'cup', 'curtain', 'desk', 'door', 'dresser', 'flower_pot', 'glass_box', 'guitar', 'keyboard', 'lamp', 'laptop', 'mantel', 'monitor', 'night_stand', 'person', 'piano', 'plant', 'radio', 'range_hood', 'sink', 'sofa', 'stairs', 'stool', 'table', 'tent', 'toilet', 'tv_stand', 'vase', 'wardrobe', 'xbox']
+********** Building [global] and [local] pos. cache ... ********** 
+
+len(pos_cache): 33
+len(pos_local_cache): 33
+wandb: 
+wandb: Run history:
+wandb: Averaged test accuracy █▂▃▃▁▂▂▂▂▂▂▂▃▃▃▄▄▄▄▄▄▄▄▄▄▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃
+wandb:             modelnet_c ▁
+wandb: 
+wandb: Run summary:
+wandb: Averaged test accuracy 45.05673
+wandb:             modelnet_c 45.05673
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /root/autodl-tmp/MCM-PC/Point-Cache/wandb/offline-run-20260510_155335-soqmf053
+wandb: Find logs at: ./wandb/offline-run-20260510_155335-soqmf053/logs
+---- TDA's test accuracy: 100.00. ----
+
+---- TDA's test accuracy: 44.71. ----
+
+---- TDA's test accuracy: 46.25. ----
+
+---- TDA's test accuracy: 46.50. ----
+
+---- TDA's test accuracy: 45.58. ----
+
+---- ***Final*** TDA's test accuracy: 45.06. ----
+

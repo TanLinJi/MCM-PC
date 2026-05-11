@@ -1,0 +1,103 @@
+
+ --------------------
+	clip_params: 2539567105
+
+ --------------------
+	lm3d_params: 32326080
+
+ --------------------
+	total_params: 2571893185 
+
+Processing modelnet_c dataset.
+
+cfg['positive']['shot_capacity']: 3 
+
+n_cluster in KMeans: 3 
+
+`alpha` for cache weights: 4.0 
+
+`beta` for cache attention sharpness: 3.0 
+
+
+Running dataset configurations:
+{'positive': {'enabled': True, 'shot_capacity': 3, 'alpha': 4.0, 'beta': 3.0}, 'negative': {'enabled': True, 'shot_capacity': 2, 'alpha': 0.117, 'beta': 1.0, 'entropy_threshold': {'lower': 0.2, 'upper': 0.5}, 'mask_threshold': {'lower': 0.03, 'upper': 1.0}}} 
+
+>>> classnames: ['airplane', 'bathtub', 'bed', 'bench', 'bookshelf', 'bottle', 'bowl', 'car', 'chair', 'cone', 'cup', 'curtain', 'desk', 'door', 'dresser', 'flower_pot', 'glass_box', 'guitar', 'keyboard', 'lamp', 'laptop', 'mantel', 'monitor', 'night_stand', 'person', 'piano', 'plant', 'radio', 'range_hood', 'sink', 'sofa', 'stairs', 'stool', 'table', 'tent', 'toilet', 'tv_stand', 'vase', 'wardrobe', 'xbox']
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /root/autodl-tmp/MCM-PC/Point-Cache/wandb/offline-run-20260511_120654-tuinnw2w
+********** Building [global] and [local] pos. cache ... ********** 
+
+********** Building [global] and [local] pos. cache is Done! ********** 
+
+len(pos_cache): 40
+len(pos_local_cache): 40
+>>> [geom] enabled, n_anchors = 120, alpha_g = 6.0, beta_g = 5.0, zero_mean = True, entropy_threshold = 0.5, estimate_scale = True
+[geom-timing] sample=    0  n_anchors=---  icpcd_ms=  ---  ent=0.036  GATE=SKIP
+---- [hier+geom] step 0 test acc: 100.00. ----
+
+[geom-timing] sample=    1  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[geom-timing] sample=    2  n_anchors=---  icpcd_ms=  ---  ent=0.097  GATE=SKIP
+[geom-timing] sample=    3  n_anchors=---  icpcd_ms=  ---  ent=0.111  GATE=SKIP
+[geom-timing] sample=    4  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[geom-timing] sample=    5  n_anchors=---  icpcd_ms=  ---  ent=0.087  GATE=SKIP
+[geom-timing] sample=    6  n_anchors=---  icpcd_ms=  ---  ent=0.215  GATE=SKIP
+[geom-timing] sample=    7  n_anchors=---  icpcd_ms=  ---  ent=0.027  GATE=SKIP
+[geom-timing] sample=    8  n_anchors=---  icpcd_ms=  ---  ent=0.004  GATE=SKIP
+[geom-timing] sample=    9  n_anchors=---  icpcd_ms=  ---  ent=0.056  GATE=SKIP
+[geom-timing] sample=   10  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[geom-timing] sample=   11  n_anchors=---  icpcd_ms=  ---  ent=0.028  GATE=SKIP
+[geom-timing] sample=   12  n_anchors=---  icpcd_ms=  ---  ent=0.077  GATE=SKIP
+[geom-timing] sample=   13  n_anchors=---  icpcd_ms=  ---  ent=0.003  GATE=SKIP
+[geom-timing] sample=   14  n_anchors=---  icpcd_ms=  ---  ent=0.229  GATE=SKIP
+[geom-timing] sample=   15  n_anchors=---  icpcd_ms=  ---  ent=0.383  GATE=SKIP
+[geom-timing] sample=   16  n_anchors=---  icpcd_ms=  ---  ent=0.216  GATE=SKIP
+[geom-timing] sample=   17  n_anchors=---  icpcd_ms=  ---  ent=0.294  GATE=SKIP
+[geom-timing] sample=   18  n_anchors=---  icpcd_ms=  ---  ent=0.014  GATE=SKIP
+[geom-timing] sample=   19  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[geom-timing] sample=   20  n_anchors=---  icpcd_ms=  ---  ent=0.008  GATE=SKIP
+[geom-timing] sample=   21  n_anchors=---  icpcd_ms=  ---  ent=0.315  GATE=SKIP
+[geom-timing] sample=   22  n_anchors=---  icpcd_ms=  ---  ent=0.334  GATE=SKIP
+[geom-timing] sample=   23  n_anchors=---  icpcd_ms=  ---  ent=0.012  GATE=SKIP
+[geom-timing] sample=   24  n_anchors=---  icpcd_ms=  ---  ent=0.408  GATE=SKIP
+[geom-timing] sample=   25  n_anchors=---  icpcd_ms=  ---  ent=0.090  GATE=SKIP
+[geom-timing] sample=   26  n_anchors=---  icpcd_ms=  ---  ent=0.022  GATE=SKIP
+[geom-timing] sample=   27  n_anchors=---  icpcd_ms=  ---  ent=0.248  GATE=SKIP
+[geom-timing] sample=   28  n_anchors=---  icpcd_ms=  ---  ent=0.055  GATE=SKIP
+[geom-timing] sample=   29  n_anchors=---  icpcd_ms=  ---  ent=0.072  GATE=SKIP
+[geom-timing] sample=   30  n_anchors=---  icpcd_ms=  ---  ent=0.036  GATE=SKIP
+[geom-timing] sample=   31  n_anchors=---  icpcd_ms=  ---  ent=0.069  GATE=SKIP
+[geom-timing] sample=   32  n_anchors=---  icpcd_ms=  ---  ent=0.120  GATE=SKIP
+[geom-timing] sample=   33  n_anchors=---  icpcd_ms=  ---  ent=0.032  GATE=SKIP
+[geom-timing] sample=   34  n_anchors=---  icpcd_ms=  ---  ent=0.063  GATE=SKIP
+[geom-timing] sample=   35  n_anchors=---  icpcd_ms=  ---  ent=0.095  GATE=SKIP
+[geom-timing] sample=   36  n_anchors=---  icpcd_ms=  ---  ent=0.003  GATE=SKIP
+[geom-timing] sample=   37  n_anchors=---  icpcd_ms=  ---  ent=0.034  GATE=SKIP
+[geom-timing] sample=   38  n_anchors=---  icpcd_ms=  ---  ent=0.006  GATE=SKIP
+[geom-timing] sample=   39  n_anchors=---  icpcd_ms=  ---  ent=0.101  GATE=SKIP
+[geom-timing] sample=   40  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[geom-timing] sample=   41  n_anchors=---  icpcd_ms=  ---  ent=0.187  GATE=SKIP
+[geom-timing] sample=   42  n_anchors=---  icpcd_ms=  ---  ent=0.322  GATE=SKIP
+[geom-timing] sample=   43  n_anchors=---  icpcd_ms=  ---  ent=0.053  GATE=SKIP
+[geom-timing] sample=   44  n_anchors=---  icpcd_ms=  ---  ent=0.130  GATE=SKIP
+[geom-timing] sample=   45  n_anchors=---  icpcd_ms=  ---  ent=0.001  GATE=SKIP
+[geom-timing] sample=   46  n_anchors=---  icpcd_ms=  ---  ent=0.315  GATE=SKIP
+[geom-timing] sample=   47  n_anchors=---  icpcd_ms=  ---  ent=0.163  GATE=SKIP
+[geom-timing] sample=   48  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[geom-timing] sample=   49  n_anchors=---  icpcd_ms=  ---  ent=0.235  GATE=SKIP
+>>> [smoke] reached --max_samples=50, breaking.
+>>> [geom-gating] applied on 0/50 (0.0%) samples (threshold=0.500)
+---- ***Final*** [hier+geom] test accuracy: 72.00. ----
+
+wandb: 
+wandb: Run history:
+wandb: Averaged test accuracy ██▃▁▂▄▅▅▅▅▆▆▅▅▅▅▅▅▅▅▅▅▅▅▄▅▅▅▅▅▅▅▅▅▅▅▅▄▄▄
+wandb:             modelnet_c ▁
+wandb: 
+wandb: Run summary:
+wandb: Averaged test accuracy 72
+wandb:             modelnet_c 72
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /root/autodl-tmp/MCM-PC/Point-Cache/wandb/offline-run-20260511_120654-tuinnw2w
+wandb: Find logs at: ./wandb/offline-run-20260511_120654-tuinnw2w/logs

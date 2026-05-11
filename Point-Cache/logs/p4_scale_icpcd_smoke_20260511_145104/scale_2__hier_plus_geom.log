@@ -1,0 +1,189 @@
+
+ --------------------
+	clip_params: 2539567105
+
+ --------------------
+	lm3d_params: 32326080
+
+ --------------------
+	total_params: 2571893185 
+
+Processing modelnet_c dataset.
+
+cfg['positive']['shot_capacity']: 3 
+
+n_cluster in KMeans: 3 
+
+`alpha` for cache weights: 4.0 
+
+`beta` for cache attention sharpness: 3.0 
+
+
+Running dataset configurations:
+{'positive': {'enabled': True, 'shot_capacity': 3, 'alpha': 4.0, 'beta': 3.0}, 'negative': {'enabled': True, 'shot_capacity': 2, 'alpha': 0.117, 'beta': 1.0, 'entropy_threshold': {'lower': 0.2, 'upper': 0.5}, 'mask_threshold': {'lower': 0.03, 'upper': 1.0}}} 
+
+>>> classnames: ['airplane', 'bathtub', 'bed', 'bench', 'bookshelf', 'bottle', 'bowl', 'car', 'chair', 'cone', 'cup', 'curtain', 'desk', 'door', 'dresser', 'flower_pot', 'glass_box', 'guitar', 'keyboard', 'lamp', 'laptop', 'mantel', 'monitor', 'night_stand', 'person', 'piano', 'plant', 'radio', 'range_hood', 'sink', 'sofa', 'stairs', 'stool', 'table', 'tent', 'toilet', 'tv_stand', 'vase', 'wardrobe', 'xbox']
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /root/autodl-tmp/MCM-PC/Point-Cache/wandb/offline-run-20260511_145156-21uqa4uv
+********** Building [global] and [local] pos. cache ... ********** 
+
+********** Building [global] and [local] pos. cache is Done! ********** 
+
+len(pos_cache): 40
+len(pos_local_cache): 40
+>>> [geom] enabled, n_anchors = 120, alpha_g = 6.0, beta_g = 5.0, zero_mean = True, entropy_threshold = 0.1, estimate_scale = True
+[geom-timing] sample=    0  n_anchors=---  icpcd_ms=  ---  ent=0.036  GATE=SKIP
+[sample-info] i=    0 ent=0.0362 pred= 10 target= 10 correct=1 gate=SKIP
+---- [hier+geom] step 0 test acc: 100.00. ----
+
+[geom-timing] sample=    1  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[sample-info] i=    1 ent=0.0003 pred= 17 target= 17 correct=1 gate=SKIP
+[geom-timing] sample=    2  n_anchors=---  icpcd_ms=  ---  ent=0.097  GATE=SKIP
+[sample-info] i=    2 ent=0.0972 pred= 21 target= 28 correct=0 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=    3  n_anchors=120  icpcd_ms=765.1  ent=0.111  GATE=PASS
+[sample-info] i=    3 ent=0.1108 pred=  1 target=  1 correct=1 gate=PASS
+[geom-timing] sample=    4  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[sample-info] i=    4 ent=0.0001 pred= 17 target= 17 correct=1 gate=SKIP
+[geom-timing] sample=    5  n_anchors=---  icpcd_ms=  ---  ent=0.087  GATE=SKIP
+[sample-info] i=    5 ent=0.0867 pred=  4 target=  4 correct=1 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=    6  n_anchors=120  icpcd_ms=111.8  ent=0.215  GATE=PASS
+[sample-info] i=    6 ent=0.2148 pred= 16 target= 16 correct=1 gate=PASS
+[geom-timing] sample=    7  n_anchors=---  icpcd_ms=  ---  ent=0.027  GATE=SKIP
+[sample-info] i=    7 ent=0.0273 pred= 22 target= 22 correct=1 gate=SKIP
+[geom-timing] sample=    8  n_anchors=---  icpcd_ms=  ---  ent=0.004  GATE=SKIP
+[sample-info] i=    8 ent=0.0042 pred=  2 target=  2 correct=1 gate=SKIP
+[geom-timing] sample=    9  n_anchors=---  icpcd_ms=  ---  ent=0.056  GATE=SKIP
+[sample-info] i=    9 ent=0.0564 pred=  4 target=  4 correct=1 gate=SKIP
+[geom-timing] sample=   10  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[sample-info] i=   10 ent=0.0005 pred=  5 target=  5 correct=1 gate=SKIP
+[geom-timing] sample=   11  n_anchors=---  icpcd_ms=  ---  ent=0.028  GATE=SKIP
+[sample-info] i=   11 ent=0.0278 pred= 36 target= 36 correct=1 gate=SKIP
+[geom-timing] sample=   12  n_anchors=---  icpcd_ms=  ---  ent=0.077  GATE=SKIP
+[sample-info] i=   12 ent=0.0767 pred= 28 target= 28 correct=1 gate=SKIP
+[geom-timing] sample=   13  n_anchors=---  icpcd_ms=  ---  ent=0.003  GATE=SKIP
+[sample-info] i=   13 ent=0.0028 pred= 22 target= 22 correct=1 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   14  n_anchors=120  icpcd_ms=150.0  ent=0.229  GATE=PASS
+[sample-info] i=   14 ent=0.2289 pred= 11 target= 16 correct=0 gate=PASS
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   15  n_anchors=120  icpcd_ms=115.4  ent=0.383  GATE=PASS
+[sample-info] i=   15 ent=0.3831 pred= 13 target= 39 correct=0 gate=PASS
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   16  n_anchors=120  icpcd_ms=114.0  ent=0.216  GATE=PASS
+[sample-info] i=   16 ent=0.2163 pred= 21 target= 28 correct=0 gate=PASS
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   17  n_anchors=120  icpcd_ms=120.7  ent=0.294  GATE=PASS
+[sample-info] i=   17 ent=0.2944 pred= 28 target= 28 correct=1 gate=PASS
+[geom-timing] sample=   18  n_anchors=---  icpcd_ms=  ---  ent=0.014  GATE=SKIP
+[sample-info] i=   18 ent=0.0144 pred= 28 target= 28 correct=1 gate=SKIP
+[geom-timing] sample=   19  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[sample-info] i=   19 ent=0.0003 pred=  0 target=  0 correct=1 gate=SKIP
+[geom-timing] sample=   20  n_anchors=---  icpcd_ms=  ---  ent=0.008  GATE=SKIP
+[sample-info] i=   20 ent=0.0079 pred= 30 target= 30 correct=1 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   21  n_anchors=120  icpcd_ms=111.7  ent=0.315  GATE=PASS
+[sample-info] i=   21 ent=0.3152 pred= 23 target= 25 correct=0 gate=PASS
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   22  n_anchors=120  icpcd_ms=106.8  ent=0.334  GATE=PASS
+[sample-info] i=   22 ent=0.3342 pred= 30 target=  7 correct=0 gate=PASS
+[geom-timing] sample=   23  n_anchors=---  icpcd_ms=  ---  ent=0.012  GATE=SKIP
+[sample-info] i=   23 ent=0.0124 pred=  4 target=  4 correct=1 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   24  n_anchors=120  icpcd_ms=100.5  ent=0.408  GATE=PASS
+[sample-info] i=   24 ent=0.4082 pred= 18 target= 31 correct=0 gate=PASS
+[geom-timing] sample=   25  n_anchors=---  icpcd_ms=  ---  ent=0.090  GATE=SKIP
+[sample-info] i=   25 ent=0.0903 pred= 14 target= 14 correct=1 gate=SKIP
+[geom-timing] sample=   26  n_anchors=---  icpcd_ms=  ---  ent=0.022  GATE=SKIP
+[sample-info] i=   26 ent=0.0224 pred=  1 target=  1 correct=1 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   27  n_anchors=120  icpcd_ms=93.4  ent=0.248  GATE=PASS
+[sample-info] i=   27 ent=0.2477 pred=  5 target= 37 correct=0 gate=PASS
+[geom-timing] sample=   28  n_anchors=---  icpcd_ms=  ---  ent=0.055  GATE=SKIP
+[sample-info] i=   28 ent=0.0554 pred= 12 target= 12 correct=1 gate=SKIP
+[geom-timing] sample=   29  n_anchors=---  icpcd_ms=  ---  ent=0.072  GATE=SKIP
+[sample-info] i=   29 ent=0.0718 pred= 37 target= 26 correct=0 gate=SKIP
+[geom-timing] sample=   30  n_anchors=---  icpcd_ms=  ---  ent=0.036  GATE=SKIP
+[sample-info] i=   30 ent=0.0356 pred= 28 target= 28 correct=1 gate=SKIP
+[geom-timing] sample=   31  n_anchors=---  icpcd_ms=  ---  ent=0.069  GATE=SKIP
+[sample-info] i=   31 ent=0.0690 pred=  4 target=  4 correct=1 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   32  n_anchors=120  icpcd_ms=58.6  ent=0.120  GATE=PASS
+[sample-info] i=   32 ent=0.1202 pred= 16 target= 16 correct=1 gate=PASS
+[geom-timing] sample=   33  n_anchors=---  icpcd_ms=  ---  ent=0.032  GATE=SKIP
+[sample-info] i=   33 ent=0.0321 pred= 29 target= 29 correct=1 gate=SKIP
+[geom-timing] sample=   34  n_anchors=---  icpcd_ms=  ---  ent=0.063  GATE=SKIP
+[sample-info] i=   34 ent=0.0632 pred= 30 target= 30 correct=1 gate=SKIP
+[geom-timing] sample=   35  n_anchors=---  icpcd_ms=  ---  ent=0.095  GATE=SKIP
+[sample-info] i=   35 ent=0.0950 pred=  4 target=  4 correct=1 gate=SKIP
+[geom-timing] sample=   36  n_anchors=---  icpcd_ms=  ---  ent=0.003  GATE=SKIP
+[sample-info] i=   36 ent=0.0031 pred=  5 target=  5 correct=1 gate=SKIP
+[geom-timing] sample=   37  n_anchors=---  icpcd_ms=  ---  ent=0.034  GATE=SKIP
+[sample-info] i=   37 ent=0.0343 pred=  4 target=  4 correct=1 gate=SKIP
+[geom-timing] sample=   38  n_anchors=---  icpcd_ms=  ---  ent=0.006  GATE=SKIP
+[sample-info] i=   38 ent=0.0060 pred= 22 target= 22 correct=1 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   39  n_anchors=120  icpcd_ms=66.1  ent=0.101  GATE=PASS
+[sample-info] i=   39 ent=0.1011 pred= 14 target= 14 correct=1 gate=PASS
+[geom-timing] sample=   40  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[sample-info] i=   40 ent=0.0001 pred= 25 target= 25 correct=1 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   41  n_anchors=120  icpcd_ms=52.3  ent=0.187  GATE=PASS
+[sample-info] i=   41 ent=0.1865 pred= 10 target= 37 correct=0 gate=PASS
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   42  n_anchors=120  icpcd_ms=51.2  ent=0.322  GATE=PASS
+[sample-info] i=   42 ent=0.3215 pred= 36 target= 25 correct=0 gate=PASS
+[geom-timing] sample=   43  n_anchors=---  icpcd_ms=  ---  ent=0.053  GATE=SKIP
+[sample-info] i=   43 ent=0.0530 pred= 23 target= 36 correct=0 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   44  n_anchors=120  icpcd_ms=61.4  ent=0.130  GATE=PASS
+[sample-info] i=   44 ent=0.1295 pred= 36 target= 36 correct=1 gate=PASS
+[geom-timing] sample=   45  n_anchors=---  icpcd_ms=  ---  ent=0.001  GATE=SKIP
+[sample-info] i=   45 ent=0.0014 pred=  7 target=  7 correct=1 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   46  n_anchors=120  icpcd_ms=47.9  ent=0.315  GATE=PASS
+[sample-info] i=   46 ent=0.3147 pred= 36 target= 21 correct=0 gate=PASS
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   47  n_anchors=120  icpcd_ms=47.7  ent=0.163  GATE=PASS
+[sample-info] i=   47 ent=0.1635 pred= 38 target= 14 correct=0 gate=PASS
+[geom-timing] sample=   48  n_anchors=---  icpcd_ms=  ---  ent=0.000  GATE=SKIP
+[sample-info] i=   48 ent=0.0001 pred=  0 target=  0 correct=1 gate=SKIP
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-timing] sample=   49  n_anchors=120  icpcd_ms=48.2  ent=0.235  GATE=PASS
+[sample-info] i=   49 ent=0.2355 pred= 23 target= 33 correct=0 gate=PASS
+>>> [smoke] reached --max_samples=50, breaking.
+>>> [geom-gating] applied on 18/50 (36.0%) samples (threshold=0.100)
+---- ***Final*** [hier+geom] test accuracy: 70.00. ----
+
+wandb: 
+wandb: Run history:
+wandb: Averaged test accuracy ██▁▃▄▅▅▆▆▆▆▆▅▄▃▄▄▄▃▃▂▃▂▂▂▂▂▂▃▃▃▃▃▃▃▂▂▃▂▂
+wandb:             modelnet_c ▁
+wandb: 
+wandb: Run summary:
+wandb: Averaged test accuracy 70
+wandb:             modelnet_c 70
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /root/autodl-tmp/MCM-PC/Point-Cache/wandb/offline-run-20260511_145156-21uqa4uv
+wandb: Find logs at: ./wandb/offline-run-20260511_145156-21uqa4uv/logs

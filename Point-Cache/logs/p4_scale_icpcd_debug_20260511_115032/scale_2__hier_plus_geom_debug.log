@@ -1,0 +1,82 @@
+
+ --------------------
+	clip_params: 2539567105
+
+ --------------------
+	lm3d_params: 32326080
+
+ --------------------
+	total_params: 2571893185 
+
+Processing modelnet_c dataset.
+
+cfg['positive']['shot_capacity']: 3 
+
+n_cluster in KMeans: 3 
+
+`alpha` for cache weights: 4.0 
+
+`beta` for cache attention sharpness: 3.0 
+
+
+Running dataset configurations:
+{'positive': {'enabled': True, 'shot_capacity': 3, 'alpha': 4.0, 'beta': 3.0}, 'negative': {'enabled': True, 'shot_capacity': 2, 'alpha': 0.117, 'beta': 1.0, 'entropy_threshold': {'lower': 0.2, 'upper': 0.5}, 'mask_threshold': {'lower': 0.03, 'upper': 1.0}}} 
+
+>>> classnames: ['airplane', 'bathtub', 'bed', 'bench', 'bookshelf', 'bottle', 'bowl', 'car', 'chair', 'cone', 'cup', 'curtain', 'desk', 'door', 'dresser', 'flower_pot', 'glass_box', 'guitar', 'keyboard', 'lamp', 'laptop', 'mantel', 'monitor', 'night_stand', 'person', 'piano', 'plant', 'radio', 'range_hood', 'sink', 'sofa', 'stairs', 'stool', 'table', 'tent', 'toilet', 'tv_stand', 'vase', 'wardrobe', 'xbox']
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /root/autodl-tmp/MCM-PC/Point-Cache/wandb/offline-run-20260511_115122-lgk1wkd0
+********** Building [global] and [local] pos. cache ... ********** 
+
+********** Building [global] and [local] pos. cache is Done! ********** 
+
+len(pos_cache): 40
+len(pos_local_cache): 40
+>>> [geom] enabled, n_anchors = 120, alpha_g = 6.0, beta_g = 5.0, zero_mean = True, estimate_scale = True
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-stats] cd[min/mean/max]=0.0000/0.1748/0.5352  aff[min/p50/max]=0.5854/0.8542/1.0000  gr[min/mean/max]=4.277/9.172/15.984  gl(ZM)[min/mean/max]=-4.895/0.001/6.812  gl_top1=cls10=6.812  top1-top2_margin=0.938
+[geom-timing] sample=    0  n_anchors=120  icpcd_ms=675.5
+[logit-mags ] sample=  0 target=10  clip[min/max/|mean|]=0.994/16.469/4.980 argmax=10  gcache[min/max/|mean|]=1.813/8.297/2.977 argmax=10  lcache[min/max/|mean|]=25.391/30.641/27.938 argmax=10  ncache=None  geom[min/max/|mean|]=-4.895/6.812/2.451 argmax=10
+[pred-diff  ] sample=  0  pred_no_geom=10  pred_with_geom=10  target=10  argmax same
+---- [hier+geom] step 0 test acc: 100.00. ----
+
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-stats] cd[min/mean/max]=0.0000/0.2105/0.7843  aff[min/p50/max]=0.4565/0.8337/1.0000  gr[min/mean/max]=3.064/7.961/17.906  gl(ZM)[min/mean/max]=-4.898/-0.000/9.945  gl_top1=cls17=9.945  top1-top2_margin=5.883
+[geom-timing] sample=    1  n_anchors=120  icpcd_ms=56.2
+[logit-mags ] sample=  1 target=17  clip[min/max/|mean|]=-5.281/16.094/2.449 argmax=17  gcache[min/max/|mean|]=1.327/11.344/2.121 argmax=17  lcache[min/max/|mean|]=22.906/27.422/25.078 argmax=17  ncache=None  geom[min/max/|mean|]=-4.898/9.945/2.111 argmax=17
+[pred-diff  ] sample=  1  pred_no_geom=17  pred_with_geom=17  target=17  argmax same
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-stats] cd[min/mean/max]=0.0000/0.1554/0.4389  aff[min/p50/max]=0.6445/0.8606/1.0000  gr[min/mean/max]=5.641/9.422/14.438  gl(ZM)[min/mean/max]=-3.781/0.001/5.016  gl_top1=cls21=5.016  top1-top2_margin=0.719
+[geom-timing] sample=    2  n_anchors=120  icpcd_ms=54.2
+[logit-mags ] sample=  2 target=28  clip[min/max/|mean|]=-0.373/17.812/7.684 argmax=21  gcache[min/max/|mean|]=1.410/7.031/2.668 argmax=21  lcache[min/max/|mean|]=24.172/30.484/27.922 argmax=21  ncache=None  geom[min/max/|mean|]=-3.781/5.016/1.861 argmax=21
+[pred-diff  ] sample=  2  pred_no_geom=21  pred_with_geom=21  target=28  argmax same
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-stats] cd[min/mean/max]=0.0088/0.1847/0.6229  aff[min/p50/max]=0.5366/0.8386/0.9912  gr[min/mean/max]=4.098/8.742/15.492  gl(ZM)[min/mean/max]=-4.645/-0.002/6.750  gl_top1=cls30=6.750  top1-top2_margin=2.102
+[geom-timing] sample=    3  n_anchors=120  icpcd_ms=47.1
+[logit-mags ] sample=  3 target=1  clip[min/max/|mean|]=-1.559/13.656/3.467 argmax=6  gcache[min/max/|mean|]=1.868/4.367/2.443 argmax=6  lcache[min/max/|mean|]=22.453/27.141/25.375 argmax=36  ncache=None  geom[min/max/|mean|]=-4.645/6.750/2.584 argmax=30
+[pred-diff  ] sample=  3  pred_no_geom=6  pred_with_geom=1  target=1  *** ARGMAX CHANGED ***
+/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/pytorch3d/ops/points_alignment.py:338: UserWarning: Excessively low rank of cross-correlation between aligned point clouds. corresponding_points_alignment cannot return a unique rotation.
+  warnings.warn(
+[geom-stats] cd[min/mean/max]=0.0000/0.1952/0.7213  aff[min/p50/max]=0.4861/0.8433/1.0000  gr[min/mean/max]=3.207/8.422/17.812  gl(ZM)[min/mean/max]=-5.215/-0.002/9.391  gl_top1=cls17=9.391  top1-top2_margin=5.125
+[geom-timing] sample=    4  n_anchors=120  icpcd_ms=47.3
+[logit-mags ] sample=  4 target=17  clip[min/max/|mean|]=-4.090/17.141/2.393 argmax=17  gcache[min/max/|mean|]=1.293/9.188/2.043 argmax=17  lcache[min/max/|mean|]=22.797/28.000/25.250 argmax=17  ncache=None  geom[min/max/|mean|]=-5.215/9.391/2.225 argmax=17
+[pred-diff  ] sample=  4  pred_no_geom=17  pred_with_geom=17  target=17  argmax same
+>>> [smoke] reached --max_samples=5, breaking.
+---- ***Final*** [hier+geom] test accuracy: 80.00. ----
+
+wandb: 
+wandb: Run history:
+wandb: Averaged test accuracy ██▁▃▄
+wandb:             modelnet_c ▁
+wandb: 
+wandb: Run summary:
+wandb: Averaged test accuracy 80
+wandb:             modelnet_c 80
+wandb: 
+wandb: You can sync this run to the cloud by running:
+wandb: wandb sync /root/autodl-tmp/MCM-PC/Point-Cache/wandb/offline-run-20260511_115122-lgk1wkd0
+wandb: Find logs at: ./wandb/offline-run-20260511_115122-lgk1wkd0/logs

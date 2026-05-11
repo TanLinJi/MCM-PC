@@ -1,0 +1,28 @@
+>>> In function `main`
+
+ --------------------
+	clip_params: 2539567105
+
+ --------------------
+	lm3d_params: 32326080
+
+ --------------------
+	total_params: 2571893185 
+
+>>> In loop `for`
+Processing modelnet_c dataset.
+>>> ['modelnet_c'] classnames: ['airplane', 'bathtub', 'bed', 'bench', 'bookshelf', 'bottle', 'bowl', 'car', 'chair', 'cone', 'cup', 'curtain', 'desk', 'door', 'dresser', 'flower_pot', 'glass_box', 'guitar', 'keyboard', 'lamp', 'laptop', 'mantel', 'monitor', 'night_stand', 'person', 'piano', 'plant', 'radio', 'range_hood', 'sink', 'sofa', 'stairs', 'stool', 'table', 'tent', 'toilet', 'tv_stand', 'vase', 'wardrobe', 'xbox'] 
+
+>>> In function `run`: zero-shot inference
+---- Zero-shot test accuracy: 100.00. ----
+
+---- Zero-shot test accuracy: 76.85. ----
+
+---- Zero-shot test accuracy: 76.52. ----
+
+---- Zero-shot test accuracy: 75.75. ----
+
+---- Zero-shot test accuracy: 75.11. ----
+
+---- ***Final*** Zero-shot test accuracy: 74.84. ----
+

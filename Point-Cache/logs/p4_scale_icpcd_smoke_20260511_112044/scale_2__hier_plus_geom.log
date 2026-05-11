@@ -1,0 +1,106 @@
+
+ --------------------
+	clip_params: 2539567105
+
+ --------------------
+	lm3d_params: 32326080
+
+ --------------------
+	total_params: 2571893185 
+
+Processing modelnet_c dataset.
+
+cfg['positive']['shot_capacity']: 3 
+
+n_cluster in KMeans: 3 
+
+`alpha` for cache weights: 4.0 
+
+`beta` for cache attention sharpness: 3.0 
+
+
+Running dataset configurations:
+{'positive': {'enabled': True, 'shot_capacity': 3, 'alpha': 4.0, 'beta': 3.0}, 'negative': {'enabled': True, 'shot_capacity': 2, 'alpha': 0.117, 'beta': 1.0, 'entropy_threshold': {'lower': 0.2, 'upper': 0.5}, 'mask_threshold': {'lower': 0.03, 'upper': 1.0}}} 
+
+>>> classnames: ['airplane', 'bathtub', 'bed', 'bench', 'bookshelf', 'bottle', 'bowl', 'car', 'chair', 'cone', 'cup', 'curtain', 'desk', 'door', 'dresser', 'flower_pot', 'glass_box', 'guitar', 'keyboard', 'lamp', 'laptop', 'mantel', 'monitor', 'night_stand', 'person', 'piano', 'plant', 'radio', 'range_hood', 'sink', 'sofa', 'stairs', 'stool', 'table', 'tent', 'toilet', 'tv_stand', 'vase', 'wardrobe', 'xbox']
+wandb: Tracking run with wandb version 0.26.1
+wandb: W&B syncing is set to `offline` in this directory. Run `wandb online` or set WANDB_MODE=online to enable cloud syncing.
+wandb: Run data is saved locally in /root/autodl-tmp/MCM-PC/Point-Cache/wandb/offline-run-20260511_112428-crnp8lih
+********** Building [global] and [local] pos. cache ... ********** 
+
+Traceback (most recent call last):
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/runners/model_with_hierarchical_icpcd.py", line 417, in <module>
+    main()
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/runners/model_with_hierarchical_icpcd.py", line 408, in main
+    acc = run_test_tda(args, cfg['positive'], cfg['negative'],
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/runners/model_with_hierarchical_icpcd.py", line 266, in run_test_tda
+    pos_cache, pos_local_cache = build_cache_in_advance(
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/runners/model_with_hierarchical_icpcd.py", line 58, in build_cache_in_advance
+    pc_feats, patch_centers, clip_logits, loss, prob_map, pred = get_logits(
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/utils/utils.py", line 442, in get_logits
+    return get_openshape_logits(args.cache_type, feat, lm3d_model, clip_weights, args.p_thres)
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/utils/utils.py", line 379, in get_openshape_logits
+    pc_feats, patch_centers = lm3d_model(xyz, feat)
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/models/openshape/ppta.py", line 157, in forward
+    cls_token, patch_tokens = self.ppat(xyz.transpose(-1, -2).contiguous(), features.transpose(-1, -2).contiguous())
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/models/openshape/ppta.py", line 118, in forward
+    centroids, feature = self.sa(xyz, features)
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/models/openshape/pointnet_util.py", line 200, in forward
+    new_xyz, new_points = sample_and_group(self.npoint, self.radius, self.nsample, xyz, points)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/models/openshape/pointnet_util.py", line 127, in sample_and_group
+    fps_idx = farthest_point_sample(xyz, npoint) # [B, npoint, C]
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/models/openshape/pointnet_util.py", line 84, in farthest_point_sample
+    distance[mask] = dist[mask]
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/runners/model_with_hierarchical_icpcd.py", line 417, in <module>
+    main()
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/runners/model_with_hierarchical_icpcd.py", line 408, in main
+    acc = run_test_tda(args, cfg['positive'], cfg['negative'],
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/runners/model_with_hierarchical_icpcd.py", line 266, in run_test_tda
+    pos_cache, pos_local_cache = build_cache_in_advance(
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/runners/model_with_hierarchical_icpcd.py", line 58, in build_cache_in_advance
+    pc_feats, patch_centers, clip_logits, loss, prob_map, pred = get_logits(
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/utils/utils.py", line 442, in get_logits
+    return get_openshape_logits(args.cache_type, feat, lm3d_model, clip_weights, args.p_thres)
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/autograd/grad_mode.py", line 27, in decorate_context
+    return func(*args, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/utils/utils.py", line 379, in get_openshape_logits
+    pc_feats, patch_centers = lm3d_model(xyz, feat)
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/models/openshape/ppta.py", line 157, in forward
+    cls_token, patch_tokens = self.ppat(xyz.transpose(-1, -2).contiguous(), features.transpose(-1, -2).contiguous())
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/models/openshape/ppta.py", line 118, in forward
+    centroids, feature = self.sa(xyz, features)
+  File "/root/miniconda3/envs/mcmpc/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1130, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/models/openshape/pointnet_util.py", line 200, in forward
+    new_xyz, new_points = sample_and_group(self.npoint, self.radius, self.nsample, xyz, points)
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/models/openshape/pointnet_util.py", line 127, in sample_and_group
+    fps_idx = farthest_point_sample(xyz, npoint) # [B, npoint, C]
+  File "/root/autodl-tmp/MCM-PC/Point-Cache/models/openshape/pointnet_util.py", line 84, in farthest_point_sample
+    distance[mask] = dist[mask]
+KeyboardInterrupt
+[1;34mwandb[0m: 
+[1;34mwandb[0m: You can sync this run to the cloud by running:
+[1;34mwandb[0m: [1mwandb sync /root/autodl-tmp/MCM-PC/Point-Cache/wandb/offline-run-20260511_112428-crnp8lih[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/offline-run-20260511_112428-crnp8lih/logs[0m
