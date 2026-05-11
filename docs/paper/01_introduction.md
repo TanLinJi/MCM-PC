@@ -63,6 +63,39 @@
 [*figure placeholder F-prelim-1*]: bin-wise baseline error rate bar chart with 95% CI；x = entropy bin, y = err%；overlay scatter of per-sample (entropy, correct) for visual density.
 [*table placeholder T-prelim-1*]: 上述 4-行 ratio table 的扩展版（在 W4 主实验后扩到 7 corruption × 5 severity）。
 
+### 1.2.2 Preliminary observation: feature drift vs. anchor pollution (P1 probe, 2026-05-11)
+
+[*preliminary*；与 §1.2.1 的 entropy ratio 同档证据，作为 §1.2 第一项与第二项的直接量化基础]
+
+§1.2 第一项的诊断需要回答：当 ModelNet-C corruption 让 hier baseline 倒退时，下游错误是来自 **PointBERT feature 本身退化**（H1），还是 **test-stream-as-anchor 池被错预测污染**（H2）？我们在 ModelNet-C 全集 (n=2468) 上提取每个 sample 的 PointBERT global feature，按对齐 index 与 clean reference 配对，得到两组 paired-sample 指标：
+
+- **Feature drift**：`cos(f_clean[i], f_corr[i])` 的均值与 NN-rank 分布。
+- **Anchor pollution Δ**：1-NN top-1 acc 在 *corrupt-as-anchor*（A）vs *clean-as-anchor*（B）两种 anchor 池下的差值，holding query 不变。Δ = B − A 即 "纯 pollution 代价"。
+
+**关键观测**（节选自 `Point-Cache/reports/P1_full_drift.md` + `P1_pollution_sim.md`）：
+
+| corruption family @ sev=2 | cos mean | class-cons % | Δ pollution (pp) |
+|---|---|---|---|
+| add_global / add_local | ≈ 0.995 | ≈ 100 | +10.1 |
+| rotate | 0.961 | 99.8 | +11.4 |
+| dropout_global | 0.956 | 99.5 | +10.5 |
+| **scale** | **0.931** | **95.5** | **+11.0** |
+| dropout_local | 0.854 | 91.5 | +8.1 |
+| jitter | 0.698 | 59.5 | **−24.8** |
+
+两个对立 regime：
+
+1. **Affine-like corruption (scale / rotate / add\_\*)**：feature **几乎不漂** (cos > 0.93, class-consistency > 95%)，但 anchor pool 切换给出 **+10 ~ +13pp** 的纯增益。在 *scale* 这一最受关注的 family 上，**H1 被 falsify、H2 被 confirm**。这与 §1.2.1 entropy 单调性互补：entropy 切片告诉我们 baseline 错误集中在 high-ent，P1 进一步告诉我们这些 high-ent 错误的 root cause 是 anchor pollution 而非 feature failure。
+2. **Displacement corruption (jitter / 重度 dropout)**：feature 大幅退化 (cos < 0.70, class-consistency < 60%)，且 clean anchor 反而是 **有害** 的 (Δ ≤ −24.8pp)。在这些 corruption 上 H1+H2 同时成立 (H3)，且 anchor switching 不是有效解药。
+
+**对方法设计的影响**：§1.3 C1 原本以 "geometry-as-feature-backup" 为 framing；P1 数据表明这只在 displacement family 上 mechanistically reasonable。在 affine family 上，更直接的 remedy 是 **anchor source switching**（即把 1-NN 池从 stream 切到 training-set prototype），其 oracle 上界由本节 Δ pollution 列直接给出。最终方法将以 entropy gate（§1.2.1）+ corruption-aware anchor selector 共同构成。
+
+**对应实验源**：`docs/D20_p1_post_mortem.md` §3-§7；原始数据 `Point-Cache/reports/P1_{scale,full}_drift.md` 与 `P1_pollution_sim.md`。
+
+**注意事项 (D16)**：表中 +Δ 是 *oracle simulation*（假设 test-time 可以访问 clean training set 的 mean prototype），现实方法的 end-to-end 增益将低于此上界；扩展到 ScanObjectNN-C / Sim-to-Real 是 W4 / W5 实验侧的工作。
+
+[*figure placeholder F-prelim-2*]: scatter — x = `cos(f_clean, f_corr)`, y = pollution Δ；按 corruption family 着色；W4 主实验前用 `P1_*.json` 中 per-sample 数据出图。
+
 ---
 
 ## 1.3 主要贡献（Contributions）
@@ -108,10 +141,12 @@
 
 ## 1.6 待办
 
-- [ ] W2.5 P1 / P2 完成后回填 1.1 数字与 1.2 第一项 / 第三项的诊断结论
+- [x] ~~W2.5 P1 / P2 完成后回填 1.1 数字与 1.2 第一项 / 第三项的诊断结论~~ (P1 已完成于 §1.2.2)
 - [ ] W2.5 P5 完成后回填 1.2 第二项的跨方法对比图
 - [ ] **§1.2.1 ratio table 扩展到 7 corruption × 5 severity** (W4 主实验后)，把 preliminary 提升为 supporting evidence
 - [ ] **§1.2.1 figure placeholder F-prelim-1**：W4 后用 matplotlib 出图
+- [ ] **§1.2.2 figure placeholder F-prelim-2**：用 `Point-Cache/reports/P1_*.json` per-sample 数据出 cos vs Δ-pollution 散点图
+- [ ] **§1.3 C1 reframe**：基于 §1.2.2 数据，把 C1 从 "geometry-as-feature-backup" 重新表述为 "corruption-aware anchor source selection"（待 D20 D+E conditional 实验完成后回填，详见 `docs/D20_p1_post_mortem.md` §6-§7）
 - [ ] W4 oracle 完成后回填 1.4 的预览数字与三档判定
 - [ ] 与 §2 Related Work / §3 Method / §4 Experiments 的术语对齐 (anchor / cache cell / corruption family / negative adaptation)
 - [ ] 7 处 [需补 ref] 引用补全

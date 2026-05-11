@@ -1,10 +1,11 @@
 # D19 P4-fast-track 设计依据 (Design Rationale)
 
-> **版本**：v0.1（2026-05-11 14:45）
-> **状态**：实施中（v0.1.3 X-ray 完成，待验证 threshold=0.10）
+> **版本**：v0.2（2026-05-11 19:50，加 §9.3 失败回填）
+> **状态**：**已终止**（D19 路径基于错误的 H1 假设；详见 §9.3 + `docs/D20_p1_post_mortem.md`）
 > **作者**：用户 + Cascade
 > **目的**：把 D19 几何项（ICP-CD raw integration）的设计逻辑链从头到尾写清楚，
 >           避免「看到结果不对就改超参」的反射式工作流。
+>           **保留作历史参考**：D19 是一个完整的 falsified hypothesis trail。
 
 ---
 
@@ -404,3 +405,59 @@ bin-level baseline error rate（**严格单调递增**，证实 entropy 是干�
 3. `[full] === results table ===`: hier_plus_geom 的 acc 与 hier_baseline 的差值（应非 0）
 
 预计 ~12 min（已确认 dual-GPU baseline 耗时约 12 min）。
+
+---
+
+### 9.3 v0.1.3 重跑后的真实数据（shell-bug fix 后）— 2026-05-11 15:23
+
+`STAGE=full SEVERITIES="2"` 重跑后（log dir `p4_scale_icpcd_full_20260511_152322`，summary `summary.txt`）：
+
+| metric | value |
+|---|---|
+| `scale_2  hier_baseline` | **78.16%** |
+| `scale_2  hier_plus_geom` | **76.46%** |
+| **Δ acc** | **−1.70pp** |
+| gate_PASS samples | 900 / 2468 |
+| rescued (base wrong → geom right) | 57 |
+| broken  (base right → geom wrong) | 99 |
+| net  | **−42** |
+
+per-bin Δerr (geom − base, 仅 high-ent gate=PASS bin)：
+
+| bin | base_err% | geom_err% | Δerr |
+|---|---|---|---|
+| [0.10, 0.15) | 40.8 | 44.0 | **+3.2** |
+| [0.15, 0.20) | 41.8 | 45.3 | +3.5 |
+| [0.20, 0.30) | 52.1 | 56.4 | +4.3 |
+| [0.30, 1.00) | 68.8 | 78.1 | **+9.3** |
+
+#### 9.3.1 这个结果**falsify** D19 §9.1.5 的双假设
+
+§9.1.5 给 v0.1.3 列了两条 alternative 假设（应该至少有一条成立）：
+- **H-A**：geom 在 high-ent 全 bin 上一致 net > 0（"geom 救人"）
+- **H-B**：geom 在 [0.10, 0.20) 救得多、在 [0.30, 1.00) 救不动但也不变坏
+
+实测：**两条都被 falsify**——所有 high-ent bin 上 net < 0，且越是 high-ent 倒退越严重 (+3.2 → +9.3pp)。这是"几何 affinity 强化错 anchor"的直接证据。
+
+#### 9.3.2 跟 P1 探针的交叉印证
+
+P1 探针（D20）独立测出：scale_2 上 PointBERT feature 几乎不漂（cos=0.93, class consistency=95.5%）。这就解释了 §9.3 的现象：
+
+- D19 假设 "feature 漂了" → 设计 ICP-CD 用 geometry 补偿
+- 实际上 feature 没漂、anchor 才漂
+- ICP-CD 把"几何对齐到错 anchor"翻译成"额外的 voting 证据"，**强化** anchor pollution
+
+详见 `@/root/autodl-tmp/MCM-PC/docs/D20_p1_post_mortem.md` §5。
+
+#### 9.3.3 D19 路径终止
+
+基于 §9.3.1 + §9.3.2 的双重证据：
+
+1. **不再调 D19 超参**：α_g、β_g、threshold 都不能 fix 一个"假设错了"的方法。
+2. **不再实施 v0.1.4 双侧 gate**：§9.1.6 的触发条件未达成（§9.1.5 双假设都被 falsify），所以 v0.1.4 自动跳过。
+3. **保留 D19 实施代码** (`runners/model_with_hierarchical_icpcd.py`) 作历史参考，但不在 paper 主线推进。
+4. **方向迁移到 D20**：`docs/D20_p1_post_mortem.md` §6-§7 推荐的 D+E conditional anchor switching。
+
+#### 9.3.4 教训
+
+> ICP-CD smoke 持平 / full 倒退 这种结果，应该是"立刻停下来回头查 root cause"的红灯，而不是"再调一轮超参"的黄灯。当时若直接跑 P1（约 10 分钟），就能在做 §9.2 之前就知道 H1 错。
