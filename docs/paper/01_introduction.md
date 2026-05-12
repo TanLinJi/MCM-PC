@@ -58,7 +58,7 @@
 
 **注意事项 (D16)**：此 ratio 来自 `scale_2` 单 corruption family 的 single severity，**不能**直接外推到现实世界尺度漂移；扩展到 multi-corruption / multi-method 是 §4 实验侧的工作 (W4 / W6)。
 
-**对应实验源**：`docs/D19_design_rationale.md` §9.2.2；原始 log 位于 `Point-Cache/logs/p4_scale_icpcd_full_20260511_150549/`。
+**对应实验源**：`docs/decisions/D19_design_rationale.md` §9.2.2；原始 log 位于 `Point-Cache/logs/p4_scale_icpcd_full_20260511_150549/`。
 
 [*figure placeholder F-prelim-1*]: bin-wise baseline error rate bar chart with 95% CI；x = entropy bin, y = err%；overlay scatter of per-sample (entropy, correct) for visual density.
 [*table placeholder T-prelim-1*]: 上述 4-行 ratio table 的扩展版（在 W4 主实验后扩到 7 corruption × 5 severity）。
@@ -72,7 +72,7 @@
 - **Feature drift**：`cos(f_clean[i], f_corr[i])` 的均值与 NN-rank 分布。
 - **Anchor pollution Δ**：1-NN top-1 acc 在 *corrupt-as-anchor*（A）vs *clean-as-anchor*（B）两种 anchor 池下的差值，holding query 不变。Δ = B − A 即 "纯 pollution 代价"。
 
-**关键观测**（节选自 `Point-Cache/reports/P1_full_drift.md` + `P1_pollution_sim.md`）：
+**关键观测**（节选自 `docs/experiments/p1/P1_full_drift.md` + `P1_pollution_sim.md`）：
 
 | corruption family @ sev=2 | cos mean | class-cons % | Δ pollution (pp) |
 |---|---|---|---|
@@ -90,7 +90,7 @@
 
 **对方法设计的影响**：§1.3 C1 原本以 "geometry-as-feature-backup" 为 framing；P1 数据表明这只在 displacement family 上 mechanistically reasonable。在 affine family 上，更直接的 remedy 是 **anchor source switching**（即把 1-NN 池从 stream 切到 training-set prototype），其 oracle 上界由本节 Δ pollution 列直接给出。最终方法将以 entropy gate（§1.2.1）+ corruption-aware anchor selector 共同构成。
 
-**对应实验源**：`docs/D20_p1_post_mortem.md` §3-§7；原始数据 `Point-Cache/reports/P1_{scale,full}_drift.md` 与 `P1_pollution_sim.md`。
+**对应实验源**：`docs/decisions/D20_p1_post_mortem.md` §3-§7；原始数据 `docs/experiments/p1/P1_{scale,full}_drift.md` 与 `P1_pollution_sim.md`。
 
 **注意事项 (D16)**：表中 +Δ 是 *oracle simulation*（假设 test-time 可以访问 clean training set 的 mean prototype），现实方法的 end-to-end 增益将低于此上界；扩展到 ScanObjectNN-C / Sim-to-Real 是 W4 / W5 实验侧的工作。
 
@@ -120,7 +120,7 @@
 
 ## 1.4 结果与定位（Results, Preview）
 
-实验上，我们以 OpenShape PointBERT-ViT-g/14 [需补 ref] 为主干，在 ModelNet-C 和 ScanObjectNN-C 上评估 35-setting 平均与逐 corruption family 表现。性能目标依据 D 决策表 (`docs/MCP3D_feasibility_and_proposal.md` 附录) 拆为三档：
+实验上，我们以 OpenShape PointBERT-ViT-g/14 [需补 ref] 为主干，在 ModelNet-C 和 ScanObjectNN-C 上评估 35-setting 平均与逐 corruption family 表现。性能目标依据 D 决策表 (`docs/proposals/MCP3D_feasibility_and_proposal.md` 附录) 拆为三档：
 
 - **Floor**：35-mean ≥ +0.5pp，scale 列 ≥ 0pp（即把 negative adaptation 拉回非负）。
 - **Target**：35-mean +1~+3pp，scale 列 +1~+3pp（主卖点档）。
@@ -146,7 +146,7 @@
 - [ ] **§1.2.1 ratio table 扩展到 7 corruption × 5 severity** (W4 主实验后)，把 preliminary 提升为 supporting evidence
 - [ ] **§1.2.1 figure placeholder F-prelim-1**：W4 后用 matplotlib 出图
 - [ ] **§1.2.2 figure placeholder F-prelim-2**：用 `Point-Cache/reports/P1_*.json` per-sample 数据出 cos vs Δ-pollution 散点图
-- [ ] **§1.3 C1 reframe**：基于 §1.2.2 数据，把 C1 从 "geometry-as-feature-backup" 重新表述为 "corruption-aware anchor source selection"（待 D20 D+E conditional 实验完成后回填，详见 `docs/D20_p1_post_mortem.md` §6-§7）
+- [ ] **§1.3 C1 reframe**：基于 §1.2.2 数据，把 C1 从 "geometry-as-feature-backup" 重新表述为 "corruption-aware anchor source selection"（待 D20 D+E conditional 实验完成后回填，详见 `docs/decisions/D20_p1_post_mortem.md` §6-§7）
 - [ ] W4 oracle 完成后回填 1.4 的预览数字与三档判定
 - [ ] 与 §2 Related Work / §3 Method / §4 Experiments 的术语对齐 (anchor / cache cell / corruption family / negative adaptation)
 - [ ] 7 处 [需补 ref] 引用补全
