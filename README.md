@@ -26,26 +26,20 @@ MCM-PC/
 ├── MCP/                   # fork of CenturyChen/ICCV25-MCP (upstream commit f98c2da)
 │   └── ...                # parked for now; focus is Point-Cache baseline
 ├── docs/
-│   ├── MCP3D_feasibility_and_proposal.md
-│   ├── MCP3D_framework.md
-│   ├── MCP3D_full_proposal.md
-│   ├── MCP3D_full_proposal_v2.md
-│   ├── NAVIGATION.md
-│   └── concepts/                  # detailed module write-ups
-│       ├── 00_overview.md
-│       ├── 01_vmf_anchor.md
-│       ├── 02_icp_cd_distance.md
-│       ├── 03_compactness_diagnosis.md
-│       ├── 04_2x3_memory_matrix.md
-│       └── README.md
-├── figures/
-│   ├── mcp3d_framework_overview.mmd
-│   └── mcp3d_framework_overview.svg
-├── papers/                # reference PDFs (gitignored if size matters)
+│   ├── README.md                   # document taxonomy and placement rules
+│   ├── project/                    # navigation, SOP, milestone tracker
+│   ├── proposals/                  # proposal drafts and feasibility analyses
+│   ├── decisions/                  # design decisions and post-mortems
+│   ├── concepts/                   # learning notes and concept explainers
+│   ├── paper/                      # paper outline and manuscript drafts
+│   ├── experiments/                # experiment summaries and result reports
+│   ├── reports/                    # user-facing HTML reports
+│   ├── context/windsurf/           # conversation/context archive
+│   ├── references/papers/          # reference PDFs
+│   └── assets/figures/             # figures and diagram sources
 ├── setup_env.sh           # one-shot conda env setup (mcmpc)
 ├── download_data.sh       # batched dataset downloader (calls scripts/)
 ├── generate_paraphrase.py # LLM-based class-name paraphrase generator
-├── progress.txt           # weekly milestone tracker
 └── .gitignore             # unified for the whole monorepo
 ```
 
@@ -164,17 +158,21 @@ To **disable wandb entirely**, simply omit the `--wandb-log` flag from the comma
 
 - [x] **W1**: environment ready (`mcmpc` conda env, ICP+CD CUDA kernel verified)
 - [x] **W1**: data 31 GB and weights 27 GB locally cached
-- [ ] **W2**: Point-Cache baseline reproduction (in progress)
-- [ ] **W3**: MCP-3D method implementation (vMF anchors, ICP-CD, etc.)
+- [x] **W2**: Point-Cache baseline reproduction complete (`docs/experiments/fig1a_summary.md`)
+- [~] **W2.5**: diagnostic probes in progress; P1 completed and raw ICP-CD fast-track rejected
+- [ ] **W3**: MCP-3D method implementation / revised conditional-anchor direction
 
-See `progress.txt` for the full week-by-week tracker.
+See `docs/project/progress.txt` for the full week-by-week tracker.
 
 ---
 
 ## Documents
 
-- **High-level proposal**: `docs/MCP3D_full_proposal_v2.md`
-- **Feasibility analysis**: `docs/MCP3D_feasibility_and_proposal.md`
+- **Document map**: `docs/README.md`
+- **Project navigation**: `docs/project/NAVIGATION.md`
+- **Progress tracker**: `docs/project/progress.txt`
+- **High-level proposal**: `docs/proposals/MCP3D_full_proposal_v2.md`
+- **Feasibility analysis**: `docs/proposals/MCP3D_feasibility_and_proposal.md`
 - **Module concepts**: `docs/concepts/00_overview.md` and following
 
 ---

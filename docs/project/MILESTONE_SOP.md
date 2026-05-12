@@ -23,11 +23,11 @@
 
 ### 步骤 1 — 实验数据归档（约 10 min）
 
-- [ ] 关键数字记入 `windsurf对话/key_findings.md`（追加 F# 编号）
+- [ ] 关键数字记入 `docs/context/windsurf/key_findings.md`（追加 F# 编号）
     - 必含：出处（哪个实验跑出来）+ 数字 + 解读 + 对哪个 contribution 影响
 - [ ] 日志/结果文件留在 `Point-Cache/results/` 或 `Point-Cache/logs/`
-- [ ] `Point-Cache/progress.txt` 追加一行 NOTE
-- [ ] 若有 figure/plot：保存到 `MCM-PC/figures/wN_*.svg`（矢量优先）
+- [ ] `docs/project/progress.txt` 追加一行 NOTE
+- [ ] 若有 figure/plot：保存到 `MCM-PC/docs/assets/figures/wN_*.svg`（矢量优先）
 
 ### 步骤 2 — 论文段落写作（约 30-60 min）
 
@@ -56,17 +56,17 @@
 
 ### 步骤 4 — 决策 + 漏洞维护（约 10 min）
 
-- [ ] 新决策追加 `windsurf对话/decisions.md`（D# 编号）
-- [ ] 新漏洞追加 `windsurf对话/doc_gaps.md`（G# 编号）
+- [ ] 新决策追加 `docs/context/windsurf/decisions.md`（D# 编号）
+- [ ] 新漏洞追加 `docs/context/windsurf/doc_gaps.md`（G# 编号）
 - [ ] **重新评估全部待修复 G#**：本阶段是否修补了某条？
     - 修补的 → 移到已修复区，写明"由 W*.* 哪步骤修补"
 - [ ] **风险闸 (RISK_GATE) 自检**：本阶段触发了哪个 R#？记录决策（继续 / pivot / debug）
 
 ### 步骤 5 — 会话与计划归档（约 10 min）
 
-- [ ] `windsurf对话/chat_summary.md` 加"阶段 N"（按时间顺续编号 + 关键洞察）
-- [ ] `windsurf对话/next_steps.md` 重写：删已完成、加新待办、更新顶部"当前阶段"
-- [ ] 必要时建 `windsurf对话/session_YYYY-MM-DD.md` 单次详细笔记
+- [ ] `docs/context/windsurf/chat_summary.md` 加"阶段 N"（按时间顺续编号 + 关键洞察）
+- [ ] `docs/context/windsurf/next_steps.md` 重写：删已完成、加新待办、更新顶部"当前阶段"
+- [ ] 必要时建 `docs/context/windsurf/session_YYYY-MM-DD.md` 单次详细笔记
 
 ### 步骤 6 — 审稿人攻击模拟（约 10 min）
 
@@ -92,8 +92,8 @@
 
 | 产出类型 | 格式 | 位置 |
 |---|---|---|
-| **概念解释** / **进度报告** / **W*.* 结果报告** / **代码 review** / **design prototype** | **HTML** ⭐ | `MCM-PC/reports/YYYY-MM-DD_主题.html` |
-| Cascade 自读的笔记（`windsurf对话/*.md`）、SOP、短 checklist、决策/漏洞列表 | Markdown | `windsurf对话/` 或 `MCM-PC/docs/` |
+| **概念解释** / **进度报告** / **W*.* 结果报告** / **代码 review** / **design prototype** | **HTML** ⭐ | `MCM-PC/docs/reports/YYYY-MM-DD_主题.html` |
+| Cascade 自读的笔记（`docs/context/windsurf/*.md`）、SOP、短 checklist、决策/漏洞列表 | Markdown | `docs/context/windsurf/` 或 `MCM-PC/docs/` |
 | 论文正稿（`docs/paper/*.md`） | Markdown → 最后 LaTeX | `MCM-PC/docs/paper/` |
 | paper outline / 章节映射 / 快速表格 | Markdown | `MCM-PC/docs/paper/` |
 
@@ -104,7 +104,7 @@
 - `<details><summary>` accordion 处理长 Q&A
 - 文件大小 ≤ 150 KB（纯文本 + SVG，不嵌图片）
 
-**参考首个 demo**：`MCM-PC/reports/2026-05-10_review_session.html`
+**参考首个 demo**：`MCM-PC/docs/reports/2026-05-10_review_session.html`
 
 ---
 
@@ -194,7 +194,7 @@
 ### C.1 每周 review（建议周一花 30 min）
 
 - [ ] **进度对照**：实验进度 vs 16 周时间线（参 `chat_summary.md`）
-- [ ] **算力预算**：GPU 已用小时数 vs 总预算（建议每周记录到 `progress.txt`）
+- [ ] **算力预算**：GPU 已用小时数 vs 总预算（建议每周记录到 `docs/project/progress.txt`）
 - [ ] **数据备份**：本周关键实验结果是否已 git push + 异地备份（云盘 / 本地）
 - [ ] **漏洞推进**：`doc_gaps.md` 里的 G# 是否在持续被推进、修补
 
@@ -258,7 +258,7 @@
 - 超过 300 行时按主题拆分，命名约定：
   - 按子主题：`<原名>_part1.md` / `<原名>_part2.md`
   - 按时间段：`<原名>_phase1-5.md` / `<原名>_phase6+.md`
-- 拆分后必须在 `windsurf对话/INDEX.md` 或 SOP 自身的引导段加导航
+- 拆分后必须在 `docs/context/windsurf/INDEX.md` 或 SOP 自身的引导段加导航
 - 拆分时**保留旧文件**（重命名为 `_archive` 后缀），不要直接覆盖丢历史
 
 ### Changelog
