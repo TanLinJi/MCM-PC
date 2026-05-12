@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>概念 5：MCP 三缓存机制 — MCM-PC</title>
+<style>
+  :root {
+    --c-text: #e2e8f0;
+    --c-muted: #94a3b8;
+    --c-heading: #f1f5f9;
+    --c-accent: #60a5fa;
+    --c-bg: #0b1220;
+    --c-bg-soft: #111827;
+    --c-border: #1f2937;
+    --c-code-bg: #0f172a;
+    --c-code-text: #e2e8f0;
+
+    --c-entropy: #93c5fd;
+    --c-entropy-bg: #16243d;
+    --c-entropy-border: #2563eb;
+    --c-align: #6ee7b7;
+    --c-align-bg: #0b3a2c;
+    --c-align-border: #10b981;
+    --c-negative: #fca5a5;
+    --c-negative-bg: #3a1414;
+    --c-negative-border: #ef4444;
+
+    --c-warning-bg: #3b2a08;
+    --c-warning-border: #f59e0b;
+    --c-success-bg: #0b3a2c;
+    --c-success-border: #10b981;
+
+    --c-row-stripe: #0e1626;
+  }
+
+  /* Dark-friendly scrollbars */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--c-text);
+    background: var(--c-bg);
+  }
+
+  /* ============ Layout: TOC + main ============ */
+  .container {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 2.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+  nav.toc {
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    padding: 1rem 0.75rem;
+    background: var(--c-bg-soft);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+  }
+  nav.toc .toc-title {
+    font-weight: 600;
+    color: var(--c-heading);
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  nav.toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  nav.toc li { margin: 0.25rem 0; }
+  nav.toc a {
+    display: block;
+    padding: 0.25rem 0.5rem;
+    color: var(--c-muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    border-radius: 3px;
+    transition: color .15s, background .15s, border .15s;
+  }
+  nav.toc a:hover {
+    color: var(--c-accent);
+    background: rgba(96, 165, 250, 0.1);
+    border-left-color: var(--c-accent);
+  }
+  main { min-width: 0; }
+
+  /* ============ Typography ============ */
+  h1, h2, h3, h4 { color: var(--c-heading); line-height: 1.3; }
+  h1 {
+    font-size: 1.9rem;
+    margin: 0 0 0.5rem 0;
+    border-bottom: 3px solid var(--c-accent);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+  }
+  h2 {
+    font-size: 1.4rem;
+    margin: 2.5rem 0 1rem 0;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  h3 {
+    font-size: 1.1rem;
+    margin: 1.5rem 0 0.5rem 0;
+  }
+  h4 {
+    font-size: 1rem;
+    margin: 1rem 0 0.4rem 0;
+    color: var(--c-muted);
+  }
+  p { margin: 0.6rem 0; }
+  ul, ol { padding-left: 1.25rem; }
+  li { margin: 0.2rem 0; }
+
+  header.doc-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .doc-meta {
+    font-size: 0.875rem;
+    color: var(--c-muted);
+    margin: 0 0 0.5rem 0;
+  }
+  .lead {
+    font-size: 1.05rem;
+    color: var(--c-text);
+    background: var(--c-bg-soft);
+    border-left: 4px solid var(--c-accent);
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .lead strong { color: var(--c-heading); }
+
+  /* ============ Code blocks ============ */
+  code, pre, .mono {
+    font-family: "SF Mono", Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-size: 0.875rem;
+  }
+  code {
+    background: var(--c-code-bg);
+    color: var(--c-code-text);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    border: 1px solid var(--c-border);
+  }
+  pre {
+    background: var(--c-code-bg);
+    color: var(--c-code-text);
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--c-border);
+    overflow-x: auto;
+    line-height: 1.55;
+    margin: 0.75rem 0;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+  }
+  .kw { color: #fb923c; font-weight: 600; }
+  .str { color: #86efac; }
+  .num { color: #93c5fd; }
+  .com { color: #94a3b8; font-style: italic; }
+  .fn { color: #d8b4fe; }
+  .file-ref {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--c-muted);
+    margin-top: -0.5rem;
+    margin-bottom: 0.5rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--c-border);
+  }
+
+  /* ============ Tables ============ */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--c-border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--c-bg-soft);
+    font-weight: 600;
+    color: var(--c-heading);
+  }
+  tr:nth-child(even) td { background: var(--c-row-stripe); }
+
+  /* ============ Math ============ */
+  .formula {
+    display: block;
+    margin: 0.75rem 0;
+    padding: 0.75rem 1rem;
+    background: var(--c-bg-soft);
+    border-left: 3px solid var(--c-accent);
+    border-radius: 0 4px 4px 0;
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+    font-size: 0.95rem;
+    overflow-x: auto;
+  }
+  .formula em { font-style: italic; color: var(--c-accent); }
+
+  /* ============ Cache cards (color-coded) ============ */
+  .cache-card {
+    margin: 1rem 0;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    border: 1px solid;
+  }
+  .cache-card.entropy {
+    background: var(--c-entropy-bg);
+    border-color: var(--c-entropy-border);
+  }
+  .cache-card.entropy h3 { color: var(--c-entropy); }
+  .cache-card.align {
+    background: var(--c-align-bg);
+    border-color: var(--c-align-border);
+  }
+  .cache-card.align h3 { color: var(--c-align); }
+  .cache-card.negative {
+    background: var(--c-negative-bg);
+    border-color: var(--c-negative-border);
+  }
+  .cache-card.negative h3 { color: var(--c-negative); }
+
+  .cache-card .role {
+    font-style: italic;
+    color: var(--c-text);
+    padding: 0.5rem 0.75rem;
+    background: rgba(15, 23, 42, 0.55);
+    border-left: 3px solid currentColor;
+    border-radius: 0 4px 4px 0;
+    margin: 0.5rem 0;
+  }
+
+  /* ============ Callout boxes ============ */
+  .callout {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    border-left: 4px solid;
+  }
+  .callout.warning {
+    background: var(--c-warning-bg);
+    border-color: #f59e0b;
+  }
+  .callout.warning .label {
+    font-weight: 600;
+    color: #fcd34d;
+    margin-right: 0.5rem;
+  }
+  .callout.info {
+    background: var(--c-bg-soft);
+    border-color: var(--c-accent);
+  }
+  .callout.info .label {
+    font-weight: 600;
+    color: var(--c-accent);
+    margin-right: 0.5rem;
+  }
+  .callout.success {
+    background: var(--c-success-bg);
+    border-color: #10b981;
+  }
+  .callout.success .label {
+    font-weight: 600;
+    color: #6ee7b7;
+    margin-right: 0.5rem;
+  }
+
+  /* ============ Matrix visualization ============ */
+  .matrix-wrapper {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--c-bg-soft);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+  }
+  .matrix-grid {
+    display: grid;
+    grid-template-columns: 130px 1fr 1fr;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+  .matrix-cell {
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--c-border);
+    background: var(--c-bg-soft);
+    text-align: center;
+    font-size: 0.875rem;
+  }
+  .matrix-cell.head {
+    background: var(--c-bg-soft);
+    font-weight: 600;
+    color: var(--c-heading);
+    border: none;
+  }
+  .matrix-cell.row-head {
+    background: var(--c-bg-soft);
+    font-weight: 600;
+    color: var(--c-heading);
+    border: none;
+    text-align: left;
+    padding-left: 1rem;
+    align-content: center;
+  }
+  .matrix-cell.entropy { background: var(--c-entropy-bg); border-color: var(--c-entropy-border); }
+  .matrix-cell.align { background: var(--c-align-bg); border-color: var(--c-align-border); }
+  .matrix-cell.negative { background: var(--c-negative-bg); border-color: var(--c-negative-border); }
+  .matrix-cell.disabled { background: #0e1626; color: var(--c-muted); border-style: dashed; }
+  .matrix-cell .cell-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+  }
+  .matrix-cell .cell-desc {
+    font-size: 0.78rem;
+    color: var(--c-muted);
+  }
+  .matrix-cell .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    background: rgba(15, 23, 42, 0.6);
+    margin-top: 0.25rem;
+  }
+
+  /* ============ Misc ============ */
+  hr { border: none; border-top: 1px solid var(--c-border); margin: 2rem 0; }
+  .star { color: #f59e0b; }
+  details {
+    margin: 0.75rem 0;
+    padding: 0.5rem 1rem;
+    background: var(--c-bg-soft);
+    border: 1px solid var(--c-border);
+    border-radius: 6px;
+  }
+  details > summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--c-heading);
+  }
+
+  footer.doc-footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--c-border);
+    font-size: 0.875rem;
+    color: var(--c-muted);
+  }
+
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+    nav.toc { position: static; max-height: none; }
+    .matrix-grid { grid-template-columns: 100px 1fr 1fr; font-size: 0.8rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ====================== TOC ====================== -->
+  <nav class="toc">
+    <div class="toc-title">本章目录</div>
+    <ol>
+      <li><a href="#glossary">0. 全篇术语表</a></li>
+      <li><a href="#positioning">1. 一句话定位</a></li>
+      <li><a href="#scenario">2. 具体场景</a></li>
+      <li><a href="#entropy-cache">3. Cache 1：Entropy</a></li>
+      <li><a href="#align-cache">4. Cache 2：Align ⭐</a></li>
+      <li><a href="#negative-cache">5. Cache 3：Negative</a></li>
+      <li><a href="#collaboration">6. 三缓存协同</a></li>
+      <li><a href="#mcp-plus-plus">7. MCP++ 残差精修</a></li>
+      <li><a href="#migration-3d">8. 迁移到 3D</a></li>
+      <li><a href="#multi-cache-matrix">9. Multi-Cache Matrix 设计</a></li>
+      <li><a href="#next-steps">10. 下一步</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- ====================== Header ====================== -->
+    <header class="doc-header">
+      <p class="doc-meta">
+        概念 #05 · MCM-PC 项目 · 预计阅读 12 分钟
+      </p>
+      <h1>MCP 三缓存机制：Multi-Cache 的灵魂</h1>
+      <div class="lead">
+        <strong>读完应该掌握：</strong>
+        <ol style="margin: 0.25rem 0 0 0; padding-left: 1.25rem;">
+          <li>MCP 为什么要分三个 cache（而不是一个）</li>
+          <li><code>entropy</code> / <code>align</code> / <code>negative</code> 三种 cache 各存什么样本、怎么协同</li>
+          <li>MCP→3D 的关键差异在哪里</li>
+          <li>Multi-Cache Matrix 的两个轴是怎么来的</li>
+        </ol>
+      </div>
+      <p style="color: var(--c-muted);">
+        这是理解 MCM-PC 主贡献 C1（Multi-Cache Matrix）的前置课。读完后你会知道你论文核心机制具体怎么设计。
+      </p>
+    </header>
+
+    <!-- ====================== 0. Glossary ====================== -->
+    <section id="glossary">
+      <h2>0. 全篇术语表</h2>
+      <p>本章会用到不少缩写。先一次性给你字典，避免后面阅读时被卡住。</p>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:8rem">缩写</th>
+            <th style="width:10rem">来源</th>
+            <th>含义</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>MCP</strong></td>
+            <td>ICCV 2025</td>
+            <td>Multi-Cache Prompt：那篇用三缓存做 2D 图像 TTA 的工作（你要迁移的源 paper）</td>
+          </tr>
+          <tr>
+            <td><strong>TTA</strong></td>
+            <td>ML 通用</td>
+            <td>Test-Time Adaptation：推理时边推边学</td>
+          </tr>
+          <tr>
+            <td><strong>cache</strong></td>
+            <td>TTA 子领域</td>
+            <td>缓存。存少量「代表样本」用来比对新样本</td>
+          </tr>
+          <tr>
+            <td><strong>entropy</strong></td>
+            <td>信息论</td>
+            <td>熵。概率分布的不确定度：<code>H = −Σ p log p</code>。模型输出 logits 经 softmax 后算 H</td>
+          </tr>
+          <tr>
+            <td><strong>anchor</strong></td>
+            <td>metric learning</td>
+            <td>锚点。代表某个类的向量。文本 anchor = 「chair」编码后的 768 维向量；cache anchor = 存在 cache 里的代表样本</td>
+          </tr>
+          <tr>
+            <td><strong>prototype</strong></td>
+            <td>few-shot</td>
+            <td>类原型。一个类的中心向量（通常是若干样本的平均）</td>
+          </tr>
+          <tr>
+            <td><strong>align</strong></td>
+            <td>MCP 命名</td>
+            <td>「向中心对齐」的：离类中心近的样本</td>
+          </tr>
+          <tr>
+            <td><strong>negative</strong></td>
+            <td>metric learning</td>
+            <td>负样本。不属于该类、用作反例</td>
+          </tr>
+          <tr>
+            <td><strong>shot</strong></td>
+            <td>few-shot</td>
+            <td>K-shot：每类存 K 个样本。MCP 里 K=3</td>
+          </tr>
+          <tr>
+            <td><strong>TPT</strong></td>
+            <td>ICML 2022</td>
+            <td>Test-time Prompt Tuning。MCP 的前置工作，做置信度筛选</td>
+          </tr>
+          <tr>
+            <td><strong>Tip-Adapter</strong></td>
+            <td>ECCV 2022</td>
+            <td>那篇提出 <code>α · exp(−β(1 − A)) · V</code> kernel 的 few-shot 工作；MCP / Point-Cache 都复用这个核</td>
+          </tr>
+          <tr>
+            <td><strong>InfoNCE</strong></td>
+            <td>CPC 2018</td>
+            <td>一种对比学习 loss。MCP++ 里把正负 cache 拉开用</td>
+          </tr>
+          <tr>
+            <td><strong>logits</strong></td>
+            <td>ML 通用</td>
+            <td>softmax 之前的分类得分向量，维度=类数</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ====================== 1. Positioning ====================== -->
+    <section id="positioning">
+      <h2>1. 一句话定位</h2>
+      <div class="lead" style="border-color: var(--c-accent);">
+        MCP 的核心 insight：<strong>不同性质的样本对 cache 有不同的价值，应该分开存。单 cache + 单筛选规则 = 信息缺失。</strong>
+      </div>
+
+      <p>具体来说 MCP 把测试流里看到的样本分三种：</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>样本性质</th>
+            <th>直觉描述</th>
+            <th>用哪个 cache 存</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>一眼能认对</td>
+            <td>模型很确定属于哪类，entropy 极低</td>
+            <td><span style="color: var(--c-entropy); font-weight: 600;">entropy cache</span></td>
+          </tr>
+          <tr>
+            <td>离类中心很近</td>
+            <td>不仅置信，而且「长得像类的标准样」</td>
+            <td><span style="color: var(--c-align); font-weight: 600;">align cache</span> <span class="star">⭐</span></td>
+          </tr>
+          <tr>
+            <td>模棱两可</td>
+            <td>在 A 类和 B 类边界，但能给反向信息</td>
+            <td><span style="color: var(--c-negative); font-weight: 600;">negative cache</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>这三种各自筛、各自存、各自参与最终预测。下面逐个讲清楚。</p>
+    </section>
+
+    <!-- ====================== 2. Scenario ====================== -->
+    <section id="scenario">
+      <h2>2. 具体场景：为什么不能只用一个 cache</h2>
+
+      <p>假设有一个 5 类分类问题（chair / table / car / bike / plane），test stream 一个一个来 1000 个样本。
+      你只能 <strong>每类存 K=3 shot</strong>（总共 15 个槽位）。模型对每个样本会给：</p>
+
+      <ul>
+        <li>一个预测 label <code>ŷ</code></li>
+        <li>一个 entropy 值（越低越确定）</li>
+      </ul>
+
+      <p>问题：该把哪些样本存进 cache？</p>
+
+      <h3>2.1 朴素方案（Tip-Adapter / TDA / Point-Cache 都这么做）</h3>
+
+      <div class="callout info">
+        <span class="label">朴素策略</span>
+        按 entropy 排序，每类存最低的 3 个。
+      </div>
+
+      <p>代码来自 MCP 原版（<code>MCP/mcp_runner.py:31-42</code>）：</p>
+<pre><code><span class="kw">def</span> <span class="fn">update_cache</span>(cache, pred, features_loss, shot_capacity, include_prob_map=<span class="kw">False</span>):
+    item = features_loss <span class="kw">if not</span> include_prob_map <span class="kw">else</span> features_loss[:<span class="num">2</span>] + [features_loss[<span class="num">2</span>]]
+    <span class="kw">if</span> pred <span class="kw">in</span> cache:
+        <span class="kw">if</span> len(cache[pred]) &lt; shot_capacity:
+            cache[pred].append(item)
+        <span class="kw">elif</span> features_loss[<span class="num">1</span>] &lt; cache[pred][-<span class="num">1</span>][<span class="num">1</span>]:    <span class="com"># 新样本 entropy 比最差的低</span>
+            cache[pred][-<span class="num">1</span>] = item                       <span class="com"># 替换最差的</span>
+        cache[pred] = sorted(cache[pred], key=operator.itemgetter(<span class="num">1</span>))
+    <span class="kw">else</span>:
+        cache[pred] = [item]
+</code></pre>
+
+      <div class="callout warning">
+        <span class="label">⚠ 缺点</span>
+        cache 里都是「一眼能认对」的样本。当来一个 <strong>长得有点像 chair 又有点像 sofa</strong> 的边缘样本时，
+        cache 里清一色标准 chair 没法帮上忙——所有「边缘样本」从 cache 拿到的相似度都很低，几乎没有区分度。
+      </div>
+
+      <h3>2.2 MCP 的方案</h3>
+
+      <div class="callout success">
+        <span class="label">✓ MCP 策略</span>
+        不只看 entropy。同时还看 <strong>离类中心的距离</strong> 和 <strong>是否在决策边界</strong>。
+        三种筛选规则 → 三个 cache。
+      </div>
+
+      <p>下面三节分别讲清楚三个 cache 怎么筛、怎么用。</p>
+    </section>
+
+    <!-- ====================== 3. Entropy Cache ====================== -->
+    <section id="entropy-cache">
+      <h2>3. Cache 1：Entropy Cache（高置信库）</h2>
+
+      <div class="cache-card entropy">
+        <h3>📘 Entropy Cache</h3>
+
+        <h4>存什么</h4>
+        <p>每类 entropy 最低的 <strong>K=3</strong> 个样本的 feature 向量。</p>
+        <p>来源 = baseline 预测出的伪标签 <code>ŷ</code>，并且 entropy 排序最靠前。</p>
+
+        <h4>怎么用</h4>
+        <p>推理时计算 query 到 cache 里每个样本的 cosine 相似度，加权得到 cache logits（Tip-Adapter kernel）：</p>
+
+        <div class="formula">
+          cache_logits = α · exp(−β · (1 − A)) · V<sub>one-hot</sub>
+        </div>
+
+        <p>其中：</p>
+        <ul>
+          <li><code>A ∈ R<sup>1×NK</sup></code>：query 与 cache 样本的相似度矩阵（NK = 类数 × shot 数）</li>
+          <li><code>V ∈ R<sup>NK×N</sup></code>：one-hot label 矩阵</li>
+          <li><code>α, β</code>：超参（α 控制 cache 整体权重，β 控制相似度衰减锐度）</li>
+        </ul>
+
+        <p>最终预测：</p>
+
+        <div class="formula">
+          logits = <em>clip_logits</em> <sub>(text-image)</sub> + α · <em>cache_logits</em> <sub>(cache 投票)</sub>
+        </div>
+
+        <div class="role">
+          🎯 <strong>角色比喻</strong>：像班级里的<em>学霸代表</em>。
+          你不确定一个新同学是哪个班的，问几个学霸代表（很确定属于哪班的样本），它们投票决定。
+        </div>
+
+        <h4>问题</h4>
+        <p>学霸代表都长得很「标准」。遇到一个长相古怪的新同学（戴口罩 + 换了发型），它们认不出。
+        → 引出 <strong>Cache 2: Align</strong>。</p>
+      </div>
+    </section>
+
+    <!-- ====================== 4. Align Cache ====================== -->
+    <section id="align-cache">
+      <h2>4. Cache 2：Align Cache（向心库）<span class="star">⭐ MCP 的核心创新</span></h2>
+
+      <div class="cache-card align">
+        <h3>📗 Align Cache</h3>
+
+        <h4>关键问题：entropy 低 ≠ 离类中心近</h4>
+
+        <p>考虑这个场景：</p>
+
+        <details open>
+          <summary>edge sample 失败案例</summary>
+          <ul>
+            <li>类 <code>chair</code> 在特征空间聚成一团，中心是 <code>c_chair</code></li>
+            <li>某样本 <code>X</code> 的 feature 在 chair 团的<strong>边缘</strong>：
+              <ul>
+                <li>模型预测 chair（置信度高，entropy 低）</li>
+                <li>但 X 离 <code>c_chair</code> 比较远，更靠近 sofa 团</li>
+                <li>X 实际可能是个 「chair-sofa hybrid」</li>
+              </ul>
+            </li>
+            <li>把 X 存进 cache 的代价：后续来一个真 chair 查询时，X 让 cache 投票偏向 sofa 那一侧</li>
+            <li>→ <strong>X 是个 cache 的污染源</strong>（这就是 D20 P1 发现的 anchor pollution 雏形）</li>
+          </ul>
+        </details>
+
+        <h4>MCP 的解决方案</h4>
+
+        <div class="callout info">
+          <span class="label">双重门</span>
+          在 entropy 之外，再加一个「离类中心距离」的筛选。要进 align cache 必须 <strong>两个条件同时满足</strong>：
+          <ol>
+            <li>entropy 比 align cache 里最差的样本低</li>
+            <li><strong>离类中心的距离也比最差的近</strong></li>
+          </ol>
+        </div>
+
+        <h4>代码逐行</h4>
+
+        <p class="file-ref">来源：<code>MCP/mcp_runner.py:55-74</code></p>
+
+<pre><code><span class="kw">def</span> <span class="fn">update_align_cache</span>(align_cache, pred, features_loss, shot_capacity,
+                       cen, res_text_feat, all_classes, cache_keys=<span class="kw">None</span>):
+    text_feat = res_text_feat[:, pred]                          <span class="com"># 这一类的文本特征</span>
+    class_center = <span class="fn">update_class_center</span>(cen, pred, text_feat, cache_keys, all_classes)
+    feature = features_loss[<span class="num">0</span>][:<span class="num">1</span>]                              <span class="com"># 新样本 feature</span>
+    curr_entropy = features_loss[<span class="num">1</span>]
+    feat_dist = torch.<span class="fn">norm</span>(feature - class_center)              <span class="com"># 离类中心多远</span>
+
+    <span class="kw">if</span> pred <span class="kw">not in</span> align_cache:
+        align_cache[pred] = []
+    <span class="kw">if</span> len(align_cache[pred]) &lt; shot_capacity:
+        align_cache[pred].append((feature, curr_entropy))       <span class="com"># 没装满直接加</span>
+        align_cache[pred].sort(key=<span class="kw">lambda</span> x: float(x[<span class="num">1</span>]))
+        <span class="kw">return</span>
+
+    worst_feat, worst_ent = align_cache[pred][-<span class="num">1</span>]
+    <span class="kw">if</span> curr_entropy &lt; worst_ent:                                <span class="com"># ① entropy 比最差低</span>
+        worst_dist = torch.<span class="fn">norm</span>(worst_feat - class_center)
+        <span class="kw">if</span> feat_dist &lt; worst_dist:                              <span class="com"># ② 距离也更近</span>
+            align_cache[pred][-<span class="num">1</span>] = (feature, curr_entropy)
+            align_cache[pred].sort(key=<span class="kw">lambda</span> x: float(x[<span class="num">1</span>]))
+</code></pre>
+
+        <h4>class_center 是什么</h4>
+
+        <p>不是单纯的「cache 平均」，而是 <strong>cache 平均 + 文本中心 加权混合</strong>：</p>
+
+        <div class="formula">
+          c<sub>k</sub> = cen · (cache 里 k 类的平均 feature) + (1 − cen) · (k 类的 text anchor)
+        </div>
+
+        <p>MCP 默认 <code>cen = 0.8</code>：</p>
+        <ul>
+          <li>主要相信视觉 cache（80%）</li>
+          <li>文本只占 20%（早期 cache 不可靠时回退到文本，cache 多了视觉主导）</li>
+        </ul>
+
+        <div class="callout info">
+          <span class="label">→ 3D 迁移注意</span>
+          3D-text 对齐弱（OpenShape 的 text 锚点没有 CLIP 那么准），如果直接用 <code>cen=0.8</code>，
+          text 提供的「向心力」太弱。这里就是为什么我们需要 <strong>C3：vMF 文本锚点</strong>——
+          先通过 paraphrase + vMF MAP 把 text 锚点做准，再用进 class_center。
+        </div>
+
+        <div class="role">
+          🎯 <strong>角色比喻</strong>：像班里的<em>学霸 + 本地中产代表</em>。
+          不只置信度高（entropy 低），还要「长得像这个班的典型学生」（离中心近）。
+          这样筛出来的样本，作为「代表样本」质量更高。
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== 5. Negative Cache ====================== -->
+    <section id="negative-cache">
+      <h2>5. Cache 3：Negative Cache（边界库）</h2>
+
+      <div class="cache-card negative">
+        <h3>📕 Negative Cache</h3>
+
+        <h4>关键问题：中等 entropy 样本怎么用</h4>
+
+        <p>考虑这个场景：</p>
+
+        <ul>
+          <li>样本 X 的 entropy <strong>中等</strong>（不高也不低）</li>
+          <li>模型预测 X 是 chair，但置信度只有 55%</li>
+          <li>第二高的 sofa 概率 35%</li>
+          <li>X 在 chair-sofa 决策边界附近</li>
+        </ul>
+
+        <div class="callout warning">
+          <span class="label">⚠ 两难</span>
+          这种样本你不敢存进 entropy / align cache（不够确定，会污染）。
+          但<strong>直接扔掉也浪费</strong>：X 至少告诉你「这种 feature 既不太像 chair 也不太像 sofa」。
+        </div>
+
+        <h4>MCP 的解决方案</h4>
+
+        <p>把这些「中等 entropy」样本单独存进 <strong>negative cache</strong>，推理时<strong>反向使用</strong>（减号而不是加号）。</p>
+
+        <h4>怎么筛（两层 entropy 过滤）</h4>
+
+        <p class="file-ref">来源：<code>MCP/mcp_runner.py</code> 主循环</p>
+
+<pre><code><span class="kw">if</span> neg_enabled <span class="kw">and</span> neg_params[<span class="str">'entropy_threshold'</span>][<span class="str">'lower'</span>] &lt; prop_entropy &lt; neg_params[<span class="str">'entropy_threshold'</span>][<span class="str">'upper'</span>]:
+    <span class="com"># ① 原始 entropy 在 [lower, upper] 比如 (0.4, 0.8)</span>
+    neg_logits = <span class="num">100.</span> * image_features @ clip_weights
+    neg_logits += <span class="fn">compute_cache_logits</span>(image_features, entro_cache, ...)   <span class="com"># 加 entro_cache 投票</span>
+    neg_loss = <span class="fn">softmax_entropy</span>(neg_logits)
+    neg_entropy = <span class="fn">get_entropy</span>(neg_loss, clip_weights)
+    neg_preb = int(neg_logits.topk(<span class="num">1</span>, <span class="num">1</span>, <span class="kw">True</span>, <span class="kw">True</span>)[<span class="num">1</span>].t()[<span class="num">0</span>])
+    <span class="kw">if</span> neg_params[<span class="str">'entropy_threshold'</span>][<span class="str">'lower'</span>] &lt; neg_entropy &lt; neg_params[<span class="str">'entropy_threshold'</span>][<span class="str">'upper'</span>]:
+        <span class="com"># ② 加 cache 投票后还在区间里 → 真的是边界样本，不是噪声</span>
+        neg_map = neg_logits.softmax(-<span class="num">1</span>)
+        <span class="fn">update_cache</span>(neg_cache, neg_preb,
+                     [image_features, neg_loss, neg_map],
+                     neg_params[<span class="str">'shot_capacity'</span>], <span class="kw">True</span>)
+</code></pre>
+
+        <p>每个样本存：</p>
+        <table>
+          <tr>
+            <td><strong>key</strong></td>
+            <td><code>image_features</code>（feature 向量）</td>
+          </tr>
+          <tr>
+            <td><strong>value</strong></td>
+            <td><code>prob_map</code>（logits softmax 后的概率分布，<em>不是</em> one-hot label）</td>
+          </tr>
+          <tr>
+            <td><strong>loss</strong></td>
+            <td>用于排序，保留最差的</td>
+          </tr>
+        </table>
+
+        <h4>怎么用（反向）</h4>
+
+        <p>推理时<strong>从 final logits 里减</strong>，不是加：</p>
+
+<pre><code>final_logits -= <span class="fn">compute_cache_logits</span>(
+    image_features, neg_cache,
+    neg_params[<span class="str">'alpha'</span>], neg_params[<span class="str">'beta'</span>], clip_weights,
+    (neg_params[<span class="str">'mask_threshold'</span>][<span class="str">'lower'</span>], neg_params[<span class="str">'mask_threshold'</span>][<span class="str">'upper'</span>])
+)
+</code></pre>
+
+        <p>关键细节：<code>neg_mask_thresholds</code> 把 prob_map 转成 binary mask：</p>
+
+<pre><code>cache_values = ((cache_values &gt; neg_mask_thresholds[<span class="num">0</span>])
+              &amp; (cache_values &lt; neg_mask_thresholds[<span class="num">1</span>])).int8
+</code></pre>
+
+        <p>意思：<strong>只把 prob_map 里概率在中等区间（比如 0.03 ~ 0.20）的类标记成 1</strong>。</p>
+        <ul>
+          <li>某类概率 &gt; 0.20 → 模型相对确定，不算真的「边界」</li>
+          <li>某类概率 &lt; 0.03 → 完全无关，也不是边界</li>
+          <li>0.03 ~ 0.20 → <strong>真正的边界类</strong>，给反向信号</li>
+        </ul>
+
+        <div class="role">
+          🎯 <strong>角色比喻</strong>：像班里的<em>「边缘案例」档案</em>。
+          不存「确定不是 chair 的样本」，而是存「对 chair 来说有点像但不太像」的样本。
+          推理时：query 如果跟 cache 里「既像 chair 又像 sofa」的样本相似，就把 chair 和 sofa 的 logits 都减一点，让真正最像的类突出。
+        </div>
+
+        <div class="callout info">
+          <span class="label">→ 3D 迁移注意</span>
+          Point-Cache 已经有 neg_cache（机制几乎一样）。MCM-PC 直接<strong>复用</strong> Point-Cache 的 neg_cache，
+          不要重复实现一份（G6 漏洞修补）。
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================== 6. Collaboration ====================== -->
+    <section id="collaboration">
+      <h2>6. 三个 Cache 怎么协同（推理时）</h2>
+
+      <h3>6.1 主公式</h3>
+
+      <div class="formula" style="font-size: 1rem;">
+        final_logits = clip_logits<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ α · <em style="color: var(--c-entropy);">entropy_cache_logits</em>(query, entro_cache)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ α · <em style="color: var(--c-align);">align_cache_logits</em>(query, align_cache)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;− α · <em style="color: var(--c-negative);">negative_cache_logits</em>(query, neg_cache)
+      </div>
+
+      <h3>6.2 数据流图</h3>
+
+      <p>下面是 MCP 推理时一个样本从输入到预测的完整路径：</p>
+
+      <div style="margin: 1.5rem 0; padding: 1rem; background: var(--c-bg-soft); border-radius: 8px; overflow-x: auto;">
+        <svg viewBox="0 0 720 460" width="100%" style="max-width: 720px; display: block; margin: auto;" xmlns="http://www.w3.org/2000/svg">
+          <!-- styles -->
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <polygon points="0 0, 10 3, 0 6" fill="#94a3b8"/>
+            </marker>
+            <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <polygon points="0 0, 10 3, 0 6" fill="#93c5fd"/>
+            </marker>
+            <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <polygon points="0 0, 10 3, 0 6" fill="#6ee7b7"/>
+            </marker>
+            <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <polygon points="0 0, 10 3, 0 6" fill="#fca5a5"/>
+            </marker>
+          </defs>
+
+          <!-- input -->
+          <rect x="20" y="200" width="120" height="50" rx="6" fill="#111827" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="80" y="220" text-anchor="middle" font-size="13" fill="#e2e8f0" font-weight="600">test sample</text>
+          <text x="80" y="238" text-anchor="middle" font-size="11" fill="#94a3b8">image / pc</text>
+
+          <!-- encoder -->
+          <rect x="180" y="200" width="120" height="50" rx="6" fill="#111827" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="240" y="220" text-anchor="middle" font-size="13" fill="#e2e8f0" font-weight="600">encoder</text>
+          <text x="240" y="238" text-anchor="middle" font-size="11" fill="#94a3b8">CLIP / PointBERT</text>
+
+          <line x1="140" y1="225" x2="180" y2="225" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+          <!-- feature + entropy -->
+          <text x="320" y="218" font-size="11" fill="#94a3b8">feature, entropy</text>
+
+          <!-- 3 caches -->
+          <rect x="380" y="60" width="160" height="80" rx="6" fill="#16243d" stroke="#60a5fa" stroke-width="1.5"/>
+          <text x="460" y="85" text-anchor="middle" font-size="13" fill="#93c5fd" font-weight="600">Entropy Cache</text>
+          <text x="460" y="103" text-anchor="middle" font-size="11" fill="#e2e8f0">筛：entropy 最低</text>
+          <text x="460" y="120" text-anchor="middle" font-size="11" fill="#e2e8f0">vote: +α · sim</text>
+
+          <rect x="380" y="170" width="160" height="80" rx="6" fill="#0b3a2c" stroke="#10b981" stroke-width="1.5"/>
+          <text x="460" y="195" text-anchor="middle" font-size="13" fill="#6ee7b7" font-weight="600">Align Cache ⭐</text>
+          <text x="460" y="213" text-anchor="middle" font-size="11" fill="#e2e8f0">筛：低 ent + 离中心近</text>
+          <text x="460" y="230" text-anchor="middle" font-size="11" fill="#e2e8f0">vote: +α · sim</text>
+
+          <rect x="380" y="280" width="160" height="80" rx="6" fill="#3a1414" stroke="#ef4444" stroke-width="1.5"/>
+          <text x="460" y="305" text-anchor="middle" font-size="13" fill="#fca5a5" font-weight="600">Negative Cache</text>
+          <text x="460" y="323" text-anchor="middle" font-size="11" fill="#e2e8f0">筛：中 ent + 两层过滤</text>
+          <text x="460" y="340" text-anchor="middle" font-size="11" fill="#e2e8f0">vote: −α · sim</text>
+
+          <!-- arrows to caches -->
+          <line x1="300" y1="215" x2="378" y2="100" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+          <line x1="300" y1="225" x2="378" y2="210" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+          <line x1="300" y1="240" x2="378" y2="320" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+
+          <!-- fusion -->
+          <rect x="580" y="195" width="120" height="60" rx="6" fill="#3b2a08" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="640" y="220" text-anchor="middle" font-size="13" fill="#fcd34d" font-weight="600">fusion</text>
+          <text x="640" y="238" text-anchor="middle" font-size="11" fill="#fcd34d">clip + cache - neg</text>
+
+          <line x1="540" y1="100" x2="585" y2="210" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+          <line x1="540" y1="210" x2="585" y2="225" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+          <line x1="540" y1="320" x2="585" y2="240" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+
+          <!-- clip text path -->
+          <rect x="180" y="380" width="120" height="50" rx="6" fill="#111827" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 2"/>
+          <text x="240" y="400" text-anchor="middle" font-size="13" fill="#e2e8f0" font-weight="600">text anchor</text>
+          <text x="240" y="418" text-anchor="middle" font-size="11" fill="#94a3b8">clip_weights</text>
+
+          <line x1="240" y1="380" x2="240" y2="270" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="4 2"/>
+          <text x="252" y="320" font-size="11" fill="#94a3b8">clip_logits</text>
+          <line x1="300" y1="405" x2="585" y2="240" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="4 2"/>
+
+          <!-- output -->
+          <text x="640" y="285" text-anchor="middle" font-size="13" font-weight="600" fill="#e2e8f0">→ ŷ</text>
+        </svg>
+      </div>
+
+      <h3>6.3 哪个 cache 在什么场景起作用</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>哪个 cache 起作用</th>
+            <th>什么场景</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span style="color: var(--c-entropy); font-weight: 600;">entropy_cache</span></td>
+            <td>大部分常规样本：找最像的「标准代表」</td>
+          </tr>
+          <tr>
+            <td><span style="color: var(--c-align); font-weight: 600;">align_cache</span></td>
+            <td>corruption 下、长相 atypical 的样本：找「离中心近」的纯净代表</td>
+          </tr>
+          <tr>
+            <td><span style="color: var(--c-negative); font-weight: 600;">negative_cache</span></td>
+            <td>边界样本：减掉那些模糊类的得分，让 top-1 更突出</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6.4 cache 合并机制</h3>
+
+      <p>MCP 还做了一步把 <em>entropy</em> 和 <em>align</em> 两个 cache 的 feature 合并到 <code>cache_memory</code>，
+      重新计算每类的 prototype：</p>
+
+      <p class="file-ref">来源：<code>MCP/mcp_runner.py:106-134</code></p>
+
+<pre><code><span class="kw">def</span> <span class="fn">update_cache_joint</span>(cache_memory, cache_keys, ent_cache, align_cache, ...):
+    <span class="com"># 把 align cache 的 feature 写在前面，entropy cache 写在后面</span>
+    <span class="com"># 重新计算每类的 prototype = cache_memory.mean(dim=1)</span>
+</code></pre>
+
+      <p>目的：让 align cache 算出来的 prototype 反过来更新 entropy cache 的 class_center。
+      <strong>两个 cache 互相增强</strong>。</p>
+    </section>
+
+    <!-- ====================== 7. MCP++ ====================== -->
+    <section id="mcp-plus-plus">
+      <h2>7. MCP++（残差精修）</h2>
+
+      <p>MCP 本身是<strong>无参数</strong>的（cache 是状态，不是可学习参数）。MCP++ 在 MCP 之上加了一层<strong>轻量级 learnable residual</strong>。</p>
+
+      <h3>7.1 三个 learnable 模块</h3>
+
+      <p class="file-ref">来源：<code>MCP/mcp_runner.py:179-200</code></p>
+
+<pre><code><span class="kw">class</span> <span class="fn">TextResidue</span>(nn.Module):
+    <span class="com"># 在 text anchor 上加 0-init 残差</span>
+    <span class="kw">def</span> <span class="fn">forward</span>(self, x):
+        <span class="kw">return</span> F.<span class="fn">normalize</span>(F.<span class="fn">normalize</span>(x, dim=<span class="num">0</span>) + self.residual, dim=<span class="num">0</span>)
+
+<span class="kw">class</span> <span class="fn">PositiveCacheResidue</span>(nn.Module):
+    <span class="com"># 在 cache keys 上加 0-init 残差</span>
+    <span class="kw">def</span> <span class="fn">forward</span>(self, x):
+        <span class="kw">return</span> F.<span class="fn">normalize</span>(x.clone() + self.residual, dim=<span class="num">0</span>)
+</code></pre>
+
+      <h3>7.2 优化目标</h3>
+
+      <p>每个测试样本上跑 1-2 步梯度下降：</p>
+
+      <div class="formula">
+        loss = entropy_loss<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ λ · img2text_loss <sub>(InfoNCE: image cache ↔ text anchor 拉近)</sub><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ γ · pos2neg_loss <sub>(pos cache ↔ neg cache 拉开)</sub>
+      </div>
+
+      <h3>7.3 MCP++ 在 3D 里要不要做？</h3>
+
+      <div class="callout warning">
+        <span class="label">⚠ 决策</span>
+        <strong>default OFF，CVPR 阶段（W21）再考虑</strong>。
+        <ul>
+          <li>3D-text 对齐本来就弱（OpenShape contrastive 训练数据少）</li>
+          <li>residual 太多反而把好不容易学的 cache 扰乱</li>
+          <li>AAAI 阶段做 MCP（不带 ++）就够卖一篇</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ====================== 8. Migration to 3D ====================== -->
+    <section id="migration-3d">
+      <h2>8. MCP（2D）→ MCM-PC（3D）的关键差异</h2>
+
+      <p>这是把 MCP 翻译到 3D 时必须想清楚的几个点。每一行都是潜在的 bug 源。</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>维度</th>
+            <th>MCP (2D)</th>
+            <th>MCM-PC (3D)</th>
+            <th>怎么处理</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>encoder</td>
+            <td>CLIP ViT-B/16</td>
+            <td>OpenShape PointBERT-vitg14</td>
+            <td>直接换，feature 都是 768 维</td>
+          </tr>
+          <tr>
+            <td>augmentation</td>
+            <td>TPT 的 60 个 crop + 平均（<code>select_confident_samples</code>）</td>
+            <td>3D 没有标准 aug 配方</td>
+            <td><strong>方案 A</strong>：先不做 aug；<strong>方案 B</strong>：用 Point-Cache 的 hierarchical 5-patch 当 aug 等价物</td>
+          </tr>
+          <tr>
+            <td><code>align_pred</code> 来源</td>
+            <td>60 个 aug 的平均预测</td>
+            <td>直接用 single-view 预测</td>
+            <td>简化，先不做 aug。后期如效果不够再补</td>
+          </tr>
+          <tr>
+            <td><code>class_center</code> 文本部分</td>
+            <td>clip text embedding（质量好）</td>
+            <td>OpenShape text embedding（<strong>质量差</strong>）</td>
+            <td><strong>C3 vMF anchor 来救</strong>：用 paraphrase 平均 + vMF MAP 增强文本</td>
+          </tr>
+          <tr>
+            <td>negative cache</td>
+            <td>MCP 自实现一份</td>
+            <td>Point-Cache <strong>已经有</strong> neg_cache</td>
+            <td><strong>不要重复</strong>：复用 Point-Cache 的（修补 G6 漏洞）</td>
+          </tr>
+          <tr>
+            <td>local 表征</td>
+            <td>没有（2D single-feature）</td>
+            <td>Point-Cache 自带 hierarchical：<code>patch_centers (5, d)</code></td>
+            <td>沿 representation 轴扩展矩阵：<code>global</code> × <code>local</code></td>
+          </tr>
+          <tr>
+            <td>预测 <code>pred</code></td>
+            <td>同时给 <code>ent_pred</code> + <code>align_pred</code>（两路）</td>
+            <td>baseline 只给一路</td>
+            <td>简化为单一 <code>pred</code>，align cache 也用它</td>
+          </tr>
+          <tr>
+            <td>residual learning</td>
+            <td>MCP++ 默认 ON</td>
+            <td>3D-text 弱，先 OFF</td>
+            <td>AAAI 不做；CVPR 阶段 W21 再视效果决定</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ====================== 9. Multi-Cache Matrix ====================== -->
+    <section id="multi-cache-matrix">
+      <h2>9. Multi-Cache Matrix 设计（你的 C1）</h2>
+
+      <p>把 MCP 的<strong>功能轴</strong>和 Point-Cache 的<strong>表征轴</strong>正交组合，就是 Multi-Cache Matrix。</p>
+
+      <h3>9.1 两个轴的来源</h3>
+
+      <div style="margin: 1.5rem 0; padding: 1rem; background: var(--c-bg-soft); border-radius: 8px;">
+        <svg viewBox="0 0 600 220" width="100%" style="max-width: 600px; display: block; margin: auto;" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <polygon points="0 0, 10 3, 0 6" fill="#cbd5e1"/>
+            </marker>
+          </defs>
+          <!-- MCP source -->
+          <rect x="20" y="40" width="180" height="60" rx="6" fill="#111827" stroke="#60a5fa" stroke-width="2"/>
+          <text x="110" y="60" text-anchor="middle" font-size="13" font-weight="600" fill="#93c5fd">MCP (ICCV'25)</text>
+          <text x="110" y="78" text-anchor="middle" font-size="11" fill="#e2e8f0">3 cache: entropy / align / negative</text>
+          <text x="110" y="92" text-anchor="middle" font-size="11" fill="#e2e8f0">= 功能轴 (functional axis)</text>
+
+          <!-- Point-Cache source -->
+          <rect x="20" y="130" width="180" height="60" rx="6" fill="#111827" stroke="#10b981" stroke-width="2"/>
+          <text x="110" y="150" text-anchor="middle" font-size="13" font-weight="600" fill="#6ee7b7">Point-Cache (CVPR'25)</text>
+          <text x="110" y="168" text-anchor="middle" font-size="11" fill="#e2e8f0">2 representation: global / local</text>
+          <text x="110" y="182" text-anchor="middle" font-size="11" fill="#e2e8f0">= 表征轴 (representation axis)</text>
+
+          <!-- arrows -->
+          <line x1="200" y1="70" x2="360" y2="100" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow2)"/>
+          <line x1="200" y1="160" x2="360" y2="120" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow2)"/>
+
+          <!-- merger -->
+          <rect x="370" y="70" width="210" height="80" rx="6" fill="#3b2a08" stroke="#f59e0b" stroke-width="2"/>
+          <text x="475" y="95" text-anchor="middle" font-size="14" font-weight="600" fill="#fcd34d">Multi-Cache Matrix</text>
+          <text x="475" y="115" text-anchor="middle" font-size="11" fill="#fcd34d">3 functions × 2 representations</text>
+          <text x="475" y="132" text-anchor="middle" font-size="11" fill="#fcd34d">= 6 cells (matrix)</text>
+        </svg>
+      </div>
+
+      <h3>9.2 矩阵布局（3 × 2 = 6 cell）</h3>
+
+      <div class="matrix-wrapper">
+        <div class="matrix-grid">
+          <!-- header row -->
+          <div class="matrix-cell head"></div>
+          <div class="matrix-cell head">global<br><small>(整个点云特征)</small></div>
+          <div class="matrix-cell head">local<br><small>(5 patch 特征)</small></div>
+
+          <!-- entropy row -->
+          <div class="matrix-cell row-head">entropy<br><small style="font-weight: 400;">高置信样本</small></div>
+          <div class="matrix-cell entropy">
+            <div class="cell-name">G-entropy</div>
+            <div class="cell-desc">每类 entropy 最低的 K 个 global feature</div>
+            <span class="badge">✅ ON</span>
+          </div>
+          <div class="matrix-cell entropy">
+            <div class="cell-name">L-entropy</div>
+            <div class="cell-desc">每类 entropy 最低的 K 个 patch feature</div>
+            <span class="badge">✅ ON</span>
+          </div>
+
+          <!-- align row -->
+          <div class="matrix-cell row-head">align <span class="star">⭐</span><br><small style="font-weight: 400;">离类中心近</small></div>
+          <div class="matrix-cell align">
+            <div class="cell-name">G-align</div>
+            <div class="cell-desc">global feature 到 (mix-anchor) 距离最近</div>
+            <span class="badge">✅ ON <strong>NEW</strong></span>
+          </div>
+          <div class="matrix-cell align">
+            <div class="cell-name">L-align</div>
+            <div class="cell-desc">patch feature 到 (mix-anchor) 距离最近</div>
+            <span class="badge">✅ ON <strong>NEW</strong></span>
+          </div>
+
+          <!-- negative row -->
+          <div class="matrix-cell row-head">negative<br><small style="font-weight: 400;">边界样本</small></div>
+          <div class="matrix-cell negative">
+            <div class="cell-name">G-negative</div>
+            <div class="cell-desc">中 entropy + 两层过滤；Point-Cache 已有</div>
+            <span class="badge">✅ ON (复用)</span>
+          </div>
+          <div class="matrix-cell disabled">
+            <div class="cell-name">L-negative</div>
+            <div class="cell-desc">不一定有用，A1 消融决定</div>
+            <span class="badge">❌ default OFF</span>
+          </div>
+        </div>
+      </div>
+
+      <h3>9.3 为什么 L-negative 默认关闭</h3>
+
+      <ul>
+        <li>Point-Cache 论文里没有 local_neg_cache（只有 global negative）</li>
+        <li>patch feature 维度小、噪声大，做 negative 反向投票易抖</li>
+        <li>但保留接口，A1 消融时打开测一下，看是否有用</li>
+      </ul>
+
+      <h3>9.4 上层「Conditional Anchor Source」元机制</h3>
+
+      <div class="callout info">
+        <span class="label">来自 D20 P1 探针</span>
+        D20 发现：仿射类 corruption（scale / rotate / add）下 cache 被 anchor pollution 主导，
+        替换成训练集 prototype 能拿 <strong>+10~13pp</strong> oracle 增益；
+        但 jitter / heavy dropout 下 clean anchor 反而灾难（<strong>−25~−63pp</strong>）。
+      </div>
+
+      <p>把这个发现工程化为 <strong>cache 来源选择器</strong>，放在矩阵之上：</p>
+
+<pre><code><span class="kw">def</span> <span class="fn">select_anchor_source</span>(query_feat, training_prototypes, stream_cache, tau_lo, tau_hi):
+    proto_sim = (query_feat @ training_prototypes.T).max()  <span class="com"># query 到最近 prototype</span>
+    <span class="kw">if</span> proto_sim &gt; tau_hi:
+        <span class="kw">return</span> <span class="str">'static'</span>   <span class="com"># E plan: cache 用训练集 prototype 填（防污染）</span>
+    <span class="kw">elif</span> proto_sim &gt; tau_lo:
+        <span class="kw">return</span> <span class="str">'stream'</span>   <span class="com"># 原版: 用流式 cache</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> <span class="str">'abstain'</span>  <span class="com"># D plan: 跳过 cache，只用 text logits</span>
+</code></pre>
+
+      <p>这就是 C2 (Corruption-Aware Anchor Source)。它不进矩阵，而是<strong>控制矩阵 cache 的来源</strong>。</p>
+    </section>
+
+    <!-- ====================== 10. Next steps ====================== -->
+    <section id="next-steps">
+      <h2>10. 下一步</h2>
+
+      <h3>你已经掌握的</h3>
+      <ul>
+        <li>✅ MCP 三缓存为什么这么设计（each cache 解决一类样本性质）</li>
+        <li>✅ <code>entropy</code> / <code>align</code> / <code>negative</code> 三种 cache 的筛选规则 + 推理用法</li>
+        <li>✅ MCP→3D 8 个关键差异（encoder / aug / text 弱 / 复用 Point-Cache neg / ...）</li>
+        <li>✅ Multi-Cache Matrix 两个轴的来源（MCP 给纵轴 + Point-Cache 给横轴）</li>
+        <li>✅ 矩阵之上还有一层 Conditional Anchor Source 元机制（来自 D20）</li>
+      </ul>
+
+      <h3>接下来推荐两条路</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>选项</th>
+            <th>内容</th>
+            <th>适合谁</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>A. 继续概念课</strong></td>
+            <td>写概念 06：vMF 文本锚点的数学（MAP 闭式解推导 + BayesMM 对比）</td>
+            <td>你想完全理解 C3 再动手</td>
+          </tr>
+          <tr>
+            <td><strong>B. 动手写代码</strong></td>
+            <td>新建 <code>Point-Cache/runners/model_with_mcm.py</code>，把 MCP 三缓存翻译到 3D 流式管线，先出 smoke</td>
+            <td>你觉得概念已经够了，要看到 baseline 持平 / 超过 75.27 才踏实</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>相关文件</h3>
+      <ul>
+        <li>MCP 原版代码：<code>MCP/mcp_runner.py</code></li>
+        <li>Point-Cache 主方法：<code>Point-Cache/runners/model_with_hierarchical_caches.py</code></li>
+        <li>MCP-3D 现有骨架（数据结构已搭）：<code>Point-Cache/runners/model_with_mcp3d.py</code></li>
+        <li>D19 失败记录：<code>docs/decisions/D19_design_rationale.md</code></li>
+        <li>D20 P1 探针报告：<code>docs/experiments/p1/P1_pollution_sim.md</code></li>
+        <li>vMF 概念课：<code>docs/concepts/01_vmf_anchor.md</code>（已有 .md 版）</li>
+      </ul>
+    </section>
+
+    <footer class="doc-footer">
+      <p>
+        概念 #05 · MCM-PC 项目（<em>Multi-Cache Matrix for Point Cloud Test-Time Adaptation</em>）<br>
+        创建：2026-05-12 · 作者：AI pair · 阅读对象：项目主导（你）<br>
+        本文档以 HTML 格式编写（详见 <code>使用说明.pdf</code>：Thariq, <em>Using Claude Code: The Unreasonable Effectiveness of HTML</em>）
+      </p>
+    </footer>
+
+  </main>
+</div>
+</body>
+</html>

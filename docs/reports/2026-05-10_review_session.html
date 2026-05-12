@@ -423,7 +423,7 @@ footer a { color: var(--accent); text-decoration: none; }
 <li>写作过程中暴露的逻辑漏洞 → 立刻反馈到下一个实验设计</li>
 <li>段落 commit 也是里程碑物证（git tag <code>paper-§3.4-draft</code>）</li>
 </ul>
-<p><strong>落地</strong>：建 <code>MCM-PC/docs/paper/</code> + 写 <code>00_outline.md</code> (章节大纲 + 触发-写作映射表) + 写 §2 v0.1 草稿 + 每周 3-5 小时纯写作预算。</p>
+<p><strong>落地</strong>：建 <code>MCM-PC/docs/paper/</code> + 写 <code>docs/paper/00_outline.md</code> (章节大纲 + 触发-写作映射表) + 写 §2 v0.1 草稿 + 每周 3-5 小时纯写作预算。</p>
 </div>
 </details>
 
@@ -494,7 +494,7 @@ footer a { color: var(--accent); text-decoration: none; }
 <!-- ============ SOP v1.1 ============ -->
 <section id="sop" class="tab">
 <h2>里程碑完成 SOP v1.1</h2>
-<p>详见 <code>MCM-PC/docs/MILESTONE_SOP.md</code>。由用户主动提出 (D14)，固化为流程文档。v1.1 加入文档长度管理规则。</p>
+<p>详见 <code>MCM-PC/docs/project/MILESTONE_SOP.md</code>。由用户主动提出 (D14)，固化为流程文档。v1.1 加入文档长度管理规则。</p>
 
 <h3>触发场景</h3>
 <p>每次 W*.* 实验 / 写作 / 重大决策完成后，按 7 步走（约 60-90 min 全流程）。</p>
@@ -504,16 +504,16 @@ footer a { color: var(--accent); text-decoration: none; }
 <div class="card accent">
 <h4>1 · 实验数据归档 (10 min)</h4>
 <ul style="font-size: 13px;">
-<li>关键数字 → <code>key_findings.md</code> F#</li>
+<li>关键数字 → <code>docs/context/windsurf/key_findings.md</code> F#</li>
 <li>日志 → <code>Point-Cache/results/</code></li>
-<li><code>progress.txt</code> 追加 NOTE</li>
-<li>figure → <code>MCM-PC/figures/</code></li>
+<li><code>docs/project/progress.txt</code> 追加 NOTE</li>
+<li>figure → <code>MCM-PC/docs/assets/figures/</code></li>
 </ul>
 </div>
 <div class="card accent">
 <h4>2 · 论文段落写作 (30-60 min) ⭐</h4>
 <ul style="font-size: 13px;">
-<li>查 <code>00_outline.md</code> 触发映射</li>
+<li>查 <code>docs/paper/00_outline.md</code> 触发映射</li>
 <li>写 <code>docs/paper/0X_*.md</code> v0.X</li>
 <li>按顶会格式自检 (Topic+Evidence+Bridge)</li>
 <li>更新 outline 状态栏</li>
@@ -609,8 +609,8 @@ footer a { color: var(--accent); text-decoration: none; }
 <table style="font-size: 13px;">
 <tr><td><code>MCM-PC/docs/paper/00_outline.md</code></td><td>~75 行</td><td>论文大纲 + 触发-写作映射表</td></tr>
 <tr><td><code>MCM-PC/docs/paper/02_related_work.md</code></td><td>~95 行</td><td>§2 v0.1 草稿</td></tr>
-<tr><td><code>MCM-PC/docs/MILESTONE_SOP.md</code></td><td>224 行</td><td>v1.1 SOP</td></tr>
-<tr><td><code>MCM-PC/reports/2026-05-10_review_session.html</code></td><td>(本文)</td><td>⭐ HTML review summary</td></tr>
+<tr><td><code>MCM-PC/docs/project/MILESTONE_SOP.md</code></td><td>224 行</td><td>v1.1 SOP</td></tr>
+<tr><td><code>MCM-PC/docs/reports/2026-05-10_review_session.html</code></td><td>(本文)</td><td>⭐ HTML review summary</td></tr>
 </table>
 
 <h4>笔记区 (不入 git，自动持久化)</h4>
@@ -639,15 +639,15 @@ footer a { color: var(--accent); text-decoration: none; }
 
 git add docs/paper/00_outline.md \
         docs/paper/02_related_work.md \
-        docs/MILESTONE_SOP.md \
-        reports/2026-05-10_review_session.html
+        docs/project/MILESTONE_SOP.md \
+        docs/reports/2026-05-10_review_session.html
 
 git commit -m "docs: bootstrap paper drafts + SOP v1.1 + HTML review report (D12, D14, D15)
 
 - docs/paper/00_outline.md: paper structure + trigger-writing map
 - docs/paper/02_related_work.md: §2 first draft (v0.1)
-- docs/MILESTONE_SOP.md: 7-step SOP v1.1 (with doc length rules)
-- reports/2026-05-10_review_session.html: first HTML review deliverable
+- docs/project/MILESTONE_SOP.md: 7-step SOP v1.1 (with doc length rules)
+- docs/reports/2026-05-10_review_session.html: first HTML review deliverable
   following Thariq's 'Using Claude Code: Effectiveness of HTML' principles
 "
 
@@ -660,7 +660,7 @@ git push origin master --tags</code></pre>
 # 必读
 1. /root/autodl-tmp/windsurf对话/INDEX.md
 2. /root/autodl-tmp/windsurf对话/user_preferences.md
-3. /root/autodl-tmp/MCM-PC/docs/MILESTONE_SOP.md
+3. /root/autodl-tmp/MCM-PC/docs/project/MILESTONE_SOP.md
 4. /root/autodl-tmp/windsurf对话/chat_summary.md
 5. /root/autodl-tmp/windsurf对话/next_steps.md
 6. /root/autodl-tmp/windsurf对话/decisions.md
@@ -671,7 +671,7 @@ git push origin master --tags</code></pre>
 9. /root/autodl-tmp/windsurf对话/session_2026-05-10_evening.md
 
 # 可选：查看 HTML review
-浏览器打开 /root/autodl-tmp/MCM-PC/reports/2026-05-10_review_session.html</code></pre>
+浏览器打开 /root/autodl-tmp/MCM-PC/docs/reports/2026-05-10_review_session.html</code></pre>
 
 </section>
 
@@ -679,7 +679,7 @@ git push origin master --tags</code></pre>
 
 <footer>
 <p>MCP-3D 项目 · 2026-05-10 晚 Review Session · 遵循 <a href="https://x.com/trq212/status/2052809885763747935" target="_blank">Thariq "HTML > Markdown for complex agent outputs"</a></p>
-<p style="margin-top: 8px;">文档源：<code>MCM-PC/reports/2026-05-10_review_session.html</code> · 项目根：<code>/root/autodl-tmp/MCM-PC/</code></p>
+<p style="margin-top: 8px;">文档源：<code>MCM-PC/docs/reports/2026-05-10_review_session.html</code> · 项目根：<code>/root/autodl-tmp/MCM-PC/</code></p>
 </footer>
 
 <script>

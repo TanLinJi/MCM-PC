@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCP-3D Overall Architecture</title>
+  <style>
+    :root {
+      --bg: #08101f;
+      --panel: #0e1729;
+      --panel-2: #111c33;
+      --text: #e5eefb;
+      --muted: #96a7c1;
+      --line: #2a3854;
+      --blue: #60a5fa;
+      --green: #34d399;
+      --amber: #f59e0b;
+      --violet: #a78bfa;
+      --pink: #f472b6;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.14), transparent 30%),
+        radial-gradient(circle at top right, rgba(167, 139, 250, 0.12), transparent 28%),
+        linear-gradient(180deg, #07101d 0%, #050913 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px 24px 40px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: rgba(14, 23, 41, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: var(--shadow);
+      border-radius: 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    .title-card {
+      padding: 26px 28px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(96, 165, 250, 0.12);
+      color: #bfdbfe;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 3.4vw, 52px);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+      max-width: 70ch;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .meta {
+      padding: 18px;
+      background: rgba(17, 28, 51, 0.88);
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      min-height: 100px;
+    }
+
+    .meta .label {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .meta .value {
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .meta.blue { box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.16); }
+    .meta.green { box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.16); }
+    .meta.amber { box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.16); }
+    .meta.violet { box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.16); }
+
+    .diagram-card {
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    .diagram-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(17, 28, 51, 0.92), rgba(8, 16, 31, 0.92));
+      border: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-width: 1220px;
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 12px;
+      color: #d9e4f7;
+      margin-right: 8px;
+    }
+
+    @media (max-width: 1080px) {
+      .hero { grid-template-columns: 1fr; }
+      .meta-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <section class="card title-card">
+        <div class="eyebrow">MCP-3D · Overall Architecture</div>
+        <h1>MCP-3D 项目总体架构图</h1>
+        <p class="subtitle">
+          这张图把你的项目主线压缩成一条可执行链路：<strong>MCP</strong> 的多缓存思想作为方法源，
+          <strong>Point-Cache</strong> 作为 3D baseline，<strong>DeepSeek</strong> 负责生成多提示词文本锚点，
+          再通过几何诊断、2 × 3 记忆矩阵和多源融合，形成最终的 3D TTA 方法。
+        </p>
+        <p class="subtitle">
+          目标不是“单独复现一篇论文”，而是“把三篇文献拼成一个新的 3D 研究故事”，最后写成顶会论文。
+        </p>
+      </section>
+
+      <aside class="meta-grid">
+        <div class="meta blue">
+          <span class="label">Baseline</span>
+          <div class="value">Point-Cache：全局 / 局部 cache 作为 3D TTA 起点，所有改动都建立在它之上。</div>
+        </div>
+        <div class="meta green">
+          <span class="label">Method Source</span>
+          <div class="value">MCP：提供 confidence / compactness / boundary 的多缓存思想和融合框架。</div>
+        </div>
+        <div class="meta amber">
+          <span class="label">Text Augmentation</span>
+          <div class="value">DeepSeek：生成多条 paraphrase / prompt，借鉴 BayesMM 的文本处理思路。</div>
+        </div>
+        <div class="meta violet">
+          <span class="label">Paper Target</span>
+          <div class="value">先收敛到 AAAI 级主线，再为 CVPR 扩展留接口和后续实验。</div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="card diagram-card">
+      <div class="diagram-wrap" role="img" aria-label="MCP-3D overall architecture diagram">
+        <svg viewBox="0 0 1600 1120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bgBlock" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#111c33" />
+              <stop offset="100%" stop-color="#0b1428" />
+            </linearGradient>
+            <linearGradient id="accentBlock" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#1f3b72" />
+              <stop offset="100%" stop-color="#12203e" />
+            </linearGradient>
+            <linearGradient id="methodBlock" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#2a1f52" />
+              <stop offset="100%" stop-color="#141427" />
+            </linearGradient>
+            <linearGradient id="diagBlock" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stop-color="#4a1639" />
+              <stop offset="100%" stop-color="#1b0e18" />
+            </linearGradient>
+            <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L12,6 L0,12 z" fill="#94a3b8" />
+            </marker>
+            <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L12,6 L0,12 z" fill="#60a5fa" />
+            </marker>
+            <marker id="arrowGreen" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L12,6 L0,12 z" fill="#34d399" />
+            </marker>
+            <marker id="arrowAmber" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L12,6 L0,12 z" fill="#f59e0b" />
+            </marker>
+            <marker id="arrowViolet" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L12,6 L0,12 z" fill="#a78bfa" />
+            </marker>
+            <style>
+              .t { font-family: Inter, 'PingFang SC', 'Microsoft YaHei', sans-serif; fill: #e5eefb; }
+              .muted { fill: #9fb0c8; }
+              .small { font-size: 22px; }
+              .mid { font-size: 26px; font-weight: 700; }
+              .big { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
+              .chip { fill: #0d1630; stroke: #2a3854; stroke-width: 2; rx: 16; }
+              .block { fill: url(#bgBlock); stroke: rgba(148,163,184,0.25); stroke-width: 2; rx: 24; }
+              .blockBlue { fill: url(#accentBlock); stroke: rgba(96,165,250,0.55); stroke-width: 2.5; rx: 26; }
+              .blockGreen { fill: rgba(9, 50, 39, 0.95); stroke: rgba(52,211,153,0.6); stroke-width: 2.5; rx: 26; }
+              .blockAmber { fill: rgba(58, 37, 8, 0.95); stroke: rgba(245,158,11,0.6); stroke-width: 2.5; rx: 26; }
+              .blockViolet { fill: url(#methodBlock); stroke: rgba(167,139,250,0.72); stroke-width: 3; rx: 28; }
+              .blockPink { fill: url(#diagBlock); stroke: rgba(244,114,182,0.62); stroke-width: 2.5; rx: 26; }
+              .label { font-size: 20px; font-weight: 700; letter-spacing: 0.02em; }
+              .desc { font-size: 18px; fill: #b8c5d8; }
+              .tiny { font-size: 16px; fill: #a9b7cd; }
+              .sub { font-size: 18px; font-weight: 600; }
+              .dash { stroke-dasharray: 10 8; }
+            </style>
+          </defs>
+
+          <!-- backdrop bands -->
+          <rect x="70" y="36" width="1460" height="1028" rx="34" fill="rgba(8,16,31,0.28)" stroke="rgba(148,163,184,0.10)" />
+          <text class="t big" x="800" y="86" text-anchor="middle">MCP-3D 研究流总览</text>
+          <text class="t muted small" x="800" y="118" text-anchor="middle">MCP source + Point-Cache baseline + DeepSeek prompt augmentation → geometry-aware 3D TTA</text>
+
+          <!-- top row -->
+          <rect class="blockBlue" x="620" y="150" width="360" height="110" rx="26"/>
+          <text class="t label" x="800" y="192" text-anchor="middle">Research Goal</text>
+          <text class="t desc" x="800" y="224" text-anchor="middle">3D point-cloud Test-Time Adaptation</text>
+
+          <rect class="block" x="120" y="300" width="280" height="110" rx="24"/>
+          <text class="t label" x="260" y="344" text-anchor="middle">Baseline: Point-Cache</text>
+          <text class="t desc" x="260" y="376" text-anchor="middle">Reuse global / local cache pipeline</text>
+
+          <rect class="block" x="450" y="300" width="280" height="110" rx="24"/>
+          <text class="t label" x="590" y="344" text-anchor="middle">Method Source: MCP</text>
+          <text class="t desc" x="590" y="376" text-anchor="middle">confidence / compactness / boundary</text>
+
+          <rect class="blockAmber" x="780" y="300" width="280" height="110" rx="24"/>
+          <text class="t label" x="920" y="344" text-anchor="middle">DeepSeek Prompt Augmentation</text>
+          <text class="t desc" x="920" y="376" text-anchor="middle">multiple paraphrases per class</text>
+
+          <rect class="block" x="1110" y="300" width="280" height="110" rx="24"/>
+          <text class="t label" x="1250" y="344" text-anchor="middle">Target: Top-tier Paper</text>
+          <text class="t desc" x="1250" y="376" text-anchor="middle">AAAI first, CVPR extension later</text>
+
+          <!-- connectors from goal to inputs -->
+          <line x1="800" y1="260" x2="260" y2="300" stroke="#60a5fa" stroke-width="4" marker-end="url(#arrowBlue)" opacity="0.9"/>
+          <line x1="800" y1="260" x2="590" y2="300" stroke="#34d399" stroke-width="4" marker-end="url(#arrowGreen)" opacity="0.9"/>
+          <line x1="800" y1="260" x2="920" y2="300" stroke="#f59e0b" stroke-width="4" marker-end="url(#arrowAmber)" opacity="0.9"/>
+          <line x1="800" y1="260" x2="1250" y2="300" stroke="#a78bfa" stroke-width="4" marker-end="url(#arrowViolet)" opacity="0.9"/>
+
+          <!-- connector labels -->
+          <rect class="chip" x="685" y="278" width="230" height="34" rx="16"/>
+          <text class="t tiny" x="800" y="301" text-anchor="middle">focus of the project</text>
+
+          <!-- Point-Cache branch -->
+          <path d="M260 410 L260 490" stroke="#60a5fa" stroke-width="4" marker-end="url(#arrowBlue)"/>
+          <rect class="blockBlue" x="120" y="500" width="280" height="108" rx="24"/>
+          <text class="t sub" x="260" y="544" text-anchor="middle">Point-Cache pipeline</text>
+          <text class="t desc" x="260" y="575" text-anchor="middle">global cache + local cache</text>
+
+          <path d="M260 608 L260 688" stroke="#60a5fa" stroke-width="4" marker-end="url(#arrowBlue)"/>
+          <rect class="blockBlue" x="120" y="700" width="280" height="132" rx="24"/>
+          <text class="t sub" x="260" y="744" text-anchor="middle">Baseline reproduction</text>
+          <text class="t desc" x="260" y="777" text-anchor="middle">Figure 1(a) / Table 4 / ablations</text>
+          <text class="t tiny" x="260" y="806" text-anchor="middle">keep Point-Cache as the 3D baseline</text>
+
+          <!-- MCP branch -->
+          <path d="M590 410 L590 488" stroke="#34d399" stroke-width="4" marker-end="url(#arrowGreen)"/>
+          <rect class="blockGreen" x="450" y="500" width="280" height="108" rx="24"/>
+          <text class="t sub" x="590" y="544" text-anchor="middle">Cache taxonomy</text>
+          <text class="t desc" x="590" y="575" text-anchor="middle">confidence / compactness / boundary</text>
+
+          <path d="M590 608 L590 688" stroke="#34d399" stroke-width="4" marker-end="url(#arrowGreen)"/>
+          <rect class="blockGreen" x="450" y="700" width="280" height="132" rx="24"/>
+          <text class="t sub" x="590" y="744" text-anchor="middle">Multi-memory fusion idea</text>
+          <text class="t desc" x="590" y="777" text-anchor="middle">borrow the function axis from MCP</text>
+          <text class="t tiny" x="590" y="806" text-anchor="middle">confidence / compactness / boundary</text>
+
+          <!-- DeepSeek branch -->
+          <path d="M920 410 L920 488" stroke="#f59e0b" stroke-width="4" marker-end="url(#arrowAmber)"/>
+          <rect class="blockAmber" x="780" y="500" width="280" height="108" rx="24"/>
+          <text class="t sub" x="920" y="544" text-anchor="middle">Generate class prompts</text>
+          <text class="t desc" x="920" y="575" text-anchor="middle">multiple paraphrases per class</text>
+
+          <path d="M920 608 L920 688" stroke="#f59e0b" stroke-width="4" marker-end="url(#arrowAmber)"/>
+          <rect class="blockAmber" x="780" y="700" width="280" height="132" rx="24"/>
+          <text class="t sub" x="920" y="744" text-anchor="middle">Text anchor construction</text>
+          <text class="t desc" x="920" y="777" text-anchor="middle">text encoder → vMF MAP anchor</text>
+          <text class="t tiny" x="920" y="806" text-anchor="middle">BayesMM-style handling, text only</text>
+
+          <!-- Method source branch -->
+          <path d="M1250 410 L1250 488" stroke="#a78bfa" stroke-width="4" marker-end="url(#arrowViolet)"/>
+          <rect class="blockViolet" x="1110" y="500" width="280" height="108" rx="24"/>
+          <text class="t sub" x="1250" y="544" text-anchor="middle">MCP-3D adaptation layer</text>
+          <text class="t desc" x="1250" y="575" text-anchor="middle">geometry-aware multi-memory design</text>
+
+          <path d="M1250 608 L1250 688" stroke="#a78bfa" stroke-width="4" marker-end="url(#arrowViolet)"/>
+          <rect class="blockViolet" x="1110" y="700" width="280" height="132" rx="24"/>
+          <text class="t sub" x="1250" y="744" text-anchor="middle">Core method blocks</text>
+          <text class="t desc" x="1250" y="777" text-anchor="middle">ICP + Chamfer + 2 × 3 matrix</text>
+          <text class="t tiny" x="1250" y="806" text-anchor="middle">streaming TTA loop + multi-source fusion</text>
+
+          <!-- central merge -->
+          <rect class="blockViolet" x="470" y="870" width="660" height="120" rx="28"/>
+          <text class="t label" x="800" y="917" text-anchor="middle">MCP-3D unified layer</text>
+          <text class="t desc" x="800" y="948" text-anchor="middle">Point-Cache baseline + MCP cache logic + DeepSeek prompt anchors → one 3D TTA system</text>
+
+          <path d="M260 832 C260 900, 350 918, 470 930" stroke="#60a5fa" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
+          <path d="M590 832 C590 895, 650 918, 800 930" stroke="#34d399" stroke-width="4" fill="none" marker-end="url(#arrowGreen)"/>
+          <path d="M920 832 C920 895, 900 918, 800 930" stroke="#f59e0b" stroke-width="4" fill="none" marker-end="url(#arrowAmber)"/>
+          <path d="M1250 832 C1250 900, 1110 918, 1030 930" stroke="#a78bfa" stroke-width="4" fill="none" marker-end="url(#arrowViolet)"/>
+
+          <!-- evaluation and diagnostics -->
+          <path d="M800 990 L800 1030" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+          <rect class="blockPink" x="360" y="1040" width="880" height="42" rx="18"/>
+          <text class="t tiny" x="800" y="1068" text-anchor="middle">Evaluation: ModelNet-C / ScanObjectNN-C → diagnostics: scale / jitter / rotate / dropout probes + compactness-performance correlation</text>
+
+          <!-- diagonal diagnostics side panel -->
+          <rect class="blockPink" x="1290" y="900" width="210" height="170" rx="26"/>
+          <text class="t sub" x="1395" y="938" text-anchor="middle">Diagnostics</text>
+          <text class="t tiny" x="1395" y="972" text-anchor="middle">scale probe</text>
+          <text class="t tiny" x="1395" y="998" text-anchor="middle">jitter probe</text>
+          <text class="t tiny" x="1395" y="1024" text-anchor="middle">rotate / dropout</text>
+          <text class="t tiny" x="1395" y="1050" text-anchor="middle">failure cases</text>
+
+          <path d="M1390 900 C1350 865, 1290 845, 1250 832" stroke="#f472b6" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+
+          <!-- small legend -->
+          <rect class="chip" x="104" y="900" width="300" height="136" rx="18"/>
+          <text class="t sub" x="254" y="934" text-anchor="middle">Legend</text>
+          <text class="t tiny" x="254" y="964" text-anchor="middle">Blue: Point-Cache / baseline</text>
+          <text class="t tiny" x="254" y="988" text-anchor="middle">Green: MCP cache logic</text>
+          <text class="t tiny" x="254" y="1012" text-anchor="middle">Amber: DeepSeek text anchors</text>
+          <text class="t tiny" x="254" y="1036" text-anchor="middle">Violet/Pink: MCP-3D adaptation + diagnostics</text>
+        </svg>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      <span class="pill">self-contained HTML</span>
+      <span class="pill">no external CDN</span>
+      <span class="pill">rendered from the current MCP-3D framing</span>
+      可直接用浏览器打开 <code>docs/reports/2026-05-12_mcp3d_overall_architecture.html</code>。
+    </p>
+  </div>
+</body>
+</html>
