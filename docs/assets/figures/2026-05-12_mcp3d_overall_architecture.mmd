@@ -1,0 +1,52 @@
+flowchart TD
+  A[Research goal: 3D point-cloud TTA] --> B[Baseline: Point-Cache]
+  A --> C[Method source: MCP]
+  A --> D[Text prompt augmentation: DeepSeek / GPT-style paraphrases]
+  A --> E[Paper target: AAAI / CVPR]
+
+  B --> B1[Reuse Point-Cache pipeline]
+  B1 --> B2[Global cache]
+  B1 --> B3[Local / hierarchical cache]
+  B1 --> B4[Baseline reproduction + ablations]
+
+  C --> C1[Cache taxonomy]
+  C --> C2[Confidence / compactness / boundary]
+  C --> C3[Multi-memory fusion idea]
+
+  D --> D1[Generate multiple prompts per class]
+  D1 --> D2[Text encoder -> anchor construction]
+  D2 --> D3[vMF MAP text anchor]
+
+  B2 --> F[MCP-3D adaptation layer]
+  B3 --> F
+  C3 --> F
+  D3 --> F
+
+  F --> F1[Geometry-aware compactness memory]
+  F --> F2[ICP + Chamfer Distance]
+  F --> F3[2 x 3 memory matrix]
+  F --> F4[Streaming TTA loop]
+  F --> F5[Multi-source logits fusion]
+
+  F5 --> G[Evaluation on ModelNet-C / ScanObjectNN-C]
+  G --> H[Diagnostics]
+  H --> H1[Scale / jitter / rotate / dropout probes]
+  H --> H2[Compactness-performance correlation]
+  H --> H3[Failure cases and gate conditions]
+
+  subgraph Workspace
+    B
+    C
+    D
+    F
+    G
+    H
+  end
+
+  style A fill:#1f2937,stroke:#60a5fa,color:#fff
+  style B fill:#0f172a,stroke:#38bdf8,color:#fff
+  style C fill:#0f172a,stroke:#34d399,color:#fff
+  style D fill:#0f172a,stroke:#f59e0b,color:#fff
+  style F fill:#111827,stroke:#a78bfa,color:#fff
+  style G fill:#0f172a,stroke:#94a3b8,color:#fff
+  style H fill:#0f172a,stroke:#f472b6,color:#fff
