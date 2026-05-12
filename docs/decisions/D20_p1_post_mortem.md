@@ -82,7 +82,7 @@ gate=PASS 样本上：rescued=57, broken=99, net=-42
 - aggregation：`@/root/autodl-tmp/MCM-PC/Point-Cache/scripts/aggregate_p1.py`
 - pollution sim：`@/root/autodl-tmp/MCM-PC/Point-Cache/scripts/anchor_pollution_sim.py`
 - driver：`@/root/autodl-tmp/MCM-PC/Point-Cache/scripts/run_probe_p1.sh`
-- 报告：`@/root/autodl-tmp/MCM-PC/Point-Cache/reports/P1_scale_drift.md`, `P1_full_drift.md`, `P1_pollution_sim.md`
+- 报告：`@/root/autodl-tmp/MCM-PC/docs/experiments/p1/P1_scale_drift.md`, `P1_full_drift.md`, `P1_pollution_sim.md`
 - per-sample json：`Point-Cache/reports/P1_*.json`
 
 模型：OpenShape PointBERT ViT-bigG-14 rgb（与 hier_baseline 用的完全同一权重），输入 1024 点 + rgb=0.4 填充，fp16，cache_type=global（只取 CLS，跳过 KMeans，支持 batched forward）。数据：`data/modelnet_c/{clean,scale_0..4,jitter_0..4,rotate_0..4,dropout_{local,global}_0..4,add_{local,global}_0..4}.h5`，每个 h5 都有 2468 样本按**相同索引顺序对齐**，所以 clean[i] 和 scale_X[i] 是同一物体的 clean / corrupted pair。
@@ -115,7 +115,7 @@ gate=PASS 样本上：rescued=57, broken=99, net=-42
 | dropout_local | 0.8543 | 91.5 | 中等 |
 | jitter | 0.6976 | 59.5 | **严重** |
 
-（见 `Point-Cache/reports/P1_full_drift.md:48-116`）
+（见 `docs/experiments/p1/P1_full_drift.md:48-116`）
 
 **分层洞察**：
 - **affine-like corruption（scale / rotate / add_*）**：feature 几乎不漂。H1 被 falsify。
@@ -143,7 +143,7 @@ gate=PASS 样本上：rescued=57, broken=99, net=-42
 | jitter_3 | 81.93% | 30.75% | **−51.18pp** | E plan 致命 |
 | jitter_4 | 78.20% | 15.52% | **−62.68pp** | E plan 致命 |
 
-（见 `Point-Cache/reports/P1_pollution_sim.md:5-43`）
+（见 `docs/experiments/p1/P1_pollution_sim.md:5-43`）
 
 **两个对立的 regime**：
 
@@ -166,7 +166,7 @@ gate=PASS 样本上：rescued=57, broken=99, net=-42
 | dropout_local_3 | +13.5 | +11.9 | **−18.3** | high-drift E 输 |
 | dropout_local_4 | +16.8 | −2.3 | **−34.7** | 只 low-drift E 赢 |
 
-（见 `Point-Cache/reports/P1_pollution_sim.md:49-153`）
+（见 `docs/experiments/p1/P1_pollution_sim.md:49-153`）
 
 **sample-level 决策准则的雏形**：以 `cos(f_clean_i, f_corr_i)` 为 proxy，把样本分档：
 
