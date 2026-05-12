@@ -40,7 +40,7 @@
 #### ✅ 真正新颖、有论文卖点的部分
 
 1. **几何感知紧凑记忆库（Compactness Memory with ICP-aligned Chamfer Distance）** ⭐⭐⭐⭐⭐
-   - MCP 的 align cache 用 `||feat - text_center||` 做选择（见 `@/root/autodl-tmp/MCP-Point-Cache/MCP/mcp_runner.py:55-74`）
+   - MCP 的 align cache 用 `||feat - text_center||` 做选择（见 `@/root/autodl-tmp/MCM-PC/MCP/mcp_runner.py:55-74`）
    - 你的关键升级：在 3D 中**特征距离不足以反映"形状紧致性"**，因为：
      - 3D-文本对齐空间比 CLIP 弱（数据量小一两个数量级）
      - 旋转损坏会导致特征位置漂移但形状不变
@@ -89,7 +89,7 @@
 
 #### Module 2：Confidence Memory（低熵） — **完全可行 ✅**
 
-- 直接复用 Point-Cache 的 `update_cache()` 逻辑（见 `@/root/autodl-tmp/MCP-Point-Cache/Point-Cache/runners/model_with_hierarchical_caches.py:71-107`）
+- 直接复用 Point-Cache 的 `update_cache()` 逻辑（见 `@/root/autodl-tmp/MCM-PC/Point-Cache/runners/model_with_hierarchical_caches.py:71-107`）
 - 几乎零工程量。
 
 #### Module 3：Compactness Memory（ICP + Chamfer） — **可行但工程量大 ⚠️**
@@ -105,7 +105,7 @@
 
 #### Module 4：Boundary Memory — **可行 ✅，但与 Point-Cache 负缓存几乎重复**
 
-- Point-Cache 已有 negative cache 用 `prob_map` 做软掩码（见 `@/root/autodl-tmp/MCP-Point-Cache/Point-Cache/runners/model_with_hierarchical_caches.py:215-216`）
+- Point-Cache 已有 negative cache 用 `prob_map` 做软掩码（见 `@/root/autodl-tmp/MCM-PC/Point-Cache/runners/model_with_hierarchical_caches.py:215-216`）
 - MCP 的 negative cache 也是同样思路
 - 你叫它 "Boundary Memory" 改了名字，但**机制本质相同**
 - **建议**：要么并入 Point-Cache 的 negative cache 而不假装是新东西；要么真正做出区别（例如基于"梯度方向不确定性"而不仅是熵区间），否则 A1 消融会显示 boundary memory 增益微弱（< 0.5%）
