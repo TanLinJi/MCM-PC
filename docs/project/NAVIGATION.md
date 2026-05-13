@@ -37,7 +37,7 @@ important evidence:
 
 - `docs/experiments/p1/P1_full_drift.md`
 - `docs/experiments/p1/P1_pollution_sim.md`
-- `docs/decisions/D20_p1_post_mortem.md`
+- `docs/decisions/D22_p1_anchor_pollution_pivot.md`
 
 The raw ICP-CD fast-track route was tested and rejected for `scale_2`; the next
 method direction is conditional anchor switching rather than raw additive
@@ -50,7 +50,7 @@ For a quick recovery:
 1. `docs/README.md`
 2. `docs/project/progress.txt`
 3. `docs/experiments/fig1a_summary.md`
-4. `docs/decisions/D20_p1_post_mortem.md`
+4. `docs/decisions/D22_p1_anchor_pollution_pivot.md`
 5. `docs/paper/01_introduction.md`
 
 For concept learning:

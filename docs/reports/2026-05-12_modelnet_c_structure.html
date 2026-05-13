@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ModelNet-C 数据结构说明</title>
+  <style>
+    :root {
+      --bg: #070b12;
+      --bg-soft: #0d1422;
+      --panel: #111a2b;
+      --panel-2: #162238;
+      --ink: #e7edf7;
+      --muted: #9aa8bd;
+      --line: #27354d;
+      --blue: #60a5fa;
+      --cyan: #22d3ee;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #fb7185;
+      --violet: #a78bfa;
+      --code: #050812;
+      --shadow: 0 24px 80px rgba(0,0,0,.38);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, #070b12 0%, #0a1020 44%, #070b12 100%);
+      color: var(--ink);
+      line-height: 1.68;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 30px 20px 56px; }
+    header {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 26px;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, rgba(17,26,43,.98), rgba(22,34,56,.92));
+      box-shadow: var(--shadow);
+    }
+    h1 { margin: 0 0 8px; font-size: 32px; line-height: 1.18; letter-spacing: 0; }
+    h2 { margin: 30px 0 12px; font-size: 21px; color: #f8fbff; }
+    p { margin: 8px 0; }
+    .muted { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0; }
+    .card, table, .box, .note {
+      background: rgba(17,26,43,.96);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.18);
+    }
+    .card { padding: 17px; }
+    .card strong { display: block; color: var(--muted); font-size: 13px; margin-bottom: 5px; }
+    .value { font-size: 24px; font-weight: 750; color: var(--cyan); }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; margin: 10px 0 18px; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+    th { background: #17243b; color: #dbeafe; font-size: 13px; }
+    td { color: #d6deea; }
+    tr:last-child td { border-bottom: 0; }
+    tr:hover td { background: rgba(96,165,250,.06); }
+    code, pre { font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace; background: var(--code); color: #dbeafe; border-radius: 6px; }
+    code { padding: 2px 5px; font-size: .92em; border: 1px solid #1f2a44; }
+    pre { padding: 15px; overflow: auto; line-height: 1.52; border: 1px solid #1f2a44; }
+    .pill { display: inline-block; border: 1px solid #34507a; background: rgba(96,165,250,.1); color: #cfe4ff; border-radius: 999px; padding: 5px 10px; margin: 3px 5px 3px 0; font-size: 13px; }
+    .flow { display: grid; grid-template-columns: 1fr 42px 1fr 42px 1fr; gap: 8px; align-items: center; margin: 15px 0; }
+    .box { min-height: 96px; padding: 15px; }
+    .box strong { color: var(--amber); }
+    .arrow { text-align: center; font-size: 24px; color: var(--cyan); }
+    .note { border-left: 4px solid var(--blue); padding: 12px 14px; color: #dbeafe; background: rgba(96,165,250,.1); }
+    a { color: var(--cyan); }
+    @media (max-width: 820px) {
+      .grid, .flow { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); }
+      .wrap { padding: 18px 12px 36px; }
+      h1 { font-size: 26px; }
+      table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>ModelNet-C 数据结构说明</h1>
+      <p class="muted">路径：<code>/root/autodl-tmp/MCM-PC/Point-Cache/data/modelnet_c/</code></p>
+      <p>这份文档解释 ModelNet-C 在本项目里的文件组织、HDF5 字段含义、样本 index 对齐规则，以及它为什么能支持 P1 的 anchor pollution 诊断。</p>
+    </header>
+
+    <section class="grid">
+      <div class="card"><strong>每个 setting 的样本数</strong><div class="value">2468</div></div>
+      <div class="card"><strong>每个样本点数</strong><div class="value">1024</div></div>
+      <div class="card"><strong>类别数</strong><div class="value">40</div></div>
+    </section>
+
+    <h2>1. 文件组织</h2>
+    <p>ModelNet-C 是 ModelNet40 测试集的 corruption 版本。每一个损坏类型和强度对应一个独立的 <code>.h5</code> 文件。</p>
+    <pre><code>Point-Cache/data/modelnet_c/
+  clean.h5
+  add_global_0.h5 ... add_global_4.h5
+  add_local_0.h5  ... add_local_4.h5
+  dropout_global_0.h5 ... dropout_global_4.h5
+  dropout_local_0.h5  ... dropout_local_4.h5
+  jitter_0.h5 ... jitter_4.h5
+  rotate_0.h5 ... rotate_4.h5
+  scale_0.h5  ... scale_4.h5
+  shape_names.txt
+  shape_names_openshape.txt</code></pre>
+    <p><span class="pill">7 个 corruption family</span><span class="pill">每类 5 个 severity</span><span class="pill">35 个 corrupted setting</span><span class="pill">另有 clean.h5 作为 reference</span></p>
+
+    <h2>2. 文件名怎么读</h2>
+    <table>
+      <thead><tr><th>文件名部分</th><th>含义</th><th>例子</th></tr></thead>
+      <tbody>
+        <tr><td><code>scale</code></td><td>corruption family，损坏家族。这里表示尺度变化。</td><td><code>scale_2.h5</code></td></tr>
+        <tr><td><code>2</code></td><td>severity，损坏强度。一般 0 最轻，4 最重。</td><td><code>jitter_4.h5</code> 比 <code>jitter_1.h5</code> 更严重。</td></tr>
+        <tr><td><code>clean</code></td><td>未损坏版本，用作 reference，不属于 35 个 corrupted settings。</td><td><code>clean.h5</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>3. HDF5 字段</h2>
+    <p>HDF5 是一种常见的二进制数据文件格式，后缀通常是 <code>.h5</code>。本项目读取 ModelNet-C 时只使用两个字段：<code>data</code> 和 <code>label</code>。</p>
+    <table>
+      <thead><tr><th>字段</th><th>shape / dtype</th><th>含义</th><th>代码读取位置</th></tr></thead>
+      <tbody>
+        <tr><td><code>data</code></td><td><code>(2468, 1024, 3)</code><br />通常 <code>float32</code>，部分 jitter 文件是 <code>float64</code></td><td>点云坐标。2468 个测试样本，每个样本 1024 个点，每个点有 x/y/z 三个坐标。</td><td><code>Point-Cache/datasets/modelnet_c.py</code></td></tr>
+        <tr><td><code>label</code></td><td><code>(2468, 1)</code><br /><code>int64</code></td><td>类别编号，范围 0 到 39。编号映射到 <code>shape_names.txt</code> 中的 40 个类别名。</td><td><code>Point-Cache/datasets/modelnet_c.py</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>4. 抽查到的真实 shape</h2>
+    <table>
+      <thead><tr><th>文件</th><th>keys</th><th>data shape</th><th>label shape</th><th>label 范围</th></tr></thead>
+      <tbody>
+        <tr><td><code>clean.h5</code></td><td><code>data, label</code></td><td><code>(2468, 1024, 3)</code></td><td><code>(2468, 1)</code></td><td>0-39</td></tr>
+        <tr><td><code>scale_2.h5</code></td><td><code>data, label</code></td><td><code>(2468, 1024, 3)</code></td><td><code>(2468, 1)</code></td><td>0-39</td></tr>
+        <tr><td><code>jitter_3.h5</code></td><td><code>data, label</code></td><td><code>(2468, 1024, 3)</code></td><td><code>(2468, 1)</code></td><td>0-39</td></tr>
+      </tbody>
+    </table>
+
+    <h2>5. 类别编号</h2>
+    <p><code>shape_names.txt</code> 给出 40 个类别。<code>label=0</code> 表示第一行 <code>airplane</code>，<code>label=39</code> 表示最后一行 <code>xbox</code>。</p>
+    <pre><code>0  airplane
+1  bathtub
+2  bed
+3  bench
+...
+30 sofa
+31 stairs
+32 stool
+33 table
+...
+39 xbox</code></pre>
+
+    <h2>6. 最重要的规则：index 对齐</h2>
+    <p>不同 corruption 文件按相同 index 对齐。也就是说，同一个 index 对应同一个物体的不同版本。</p>
+    <div class="flow">
+      <div class="box"><strong>clean[17]</strong><br />第 17 个物体的干净点云</div>
+      <div class="arrow">→</div>
+      <div class="box"><strong>scale_2[17]</strong><br />同一个物体的 scale_2 版本</div>
+      <div class="arrow">→</div>
+      <div class="box"><strong>jitter_3[17]</strong><br />同一个物体的 jitter_3 版本</div>
+    </div>
+    <p>这就是 P1 可以比较 <code>clean[i]</code> 和 <code>scale_2[i]</code> 的原因。它们不是随机两个样本，而是同一个测试物体的不同损坏版本。</p>
+    <div class="note">抽查确认：<code>scale_2</code>、<code>jitter_3</code>、<code>rotate_4</code>、<code>dropout_global_4</code> 的 label 都与 <code>clean</code> 完全一致。</div>
+
+    <h2>7. 加载代码做了什么</h2>
+    <pre><code>f = h5py.File(f'{self.dataset_dir}/{cor_type}.h5')
+self.test_data = f['data'][:]
+self.test_label = f['label'][:]
+
+pc = self.test_data[idx].astype(np.float32)
+if self.lm3d == 'openshape':
+    pc[:, [1, 2]] = pc[:, [2, 1]]
+
+label = self.test_label[idx].astype(np.int32)
+classname = self.classnames[int(label)]
+rgb = np.ones_like(pc) * 0.4</code></pre>
+    <p>OpenShape 分支会交换 y/z 轴，并给每个点补一个常数 RGB 通道 <code>0.4</code>。原始 HDF5 只有 xyz，没有 RGB。</p>
+
+    <h2>8. 它怎样支持 anchor pollution 验证</h2>
+    <table>
+      <thead><tr><th>设置</th><th>query</th><th>anchor pool</th><th>回答的问题</th></tr></thead>
+      <tbody>
+        <tr><td>A: corrupt-as-anchor</td><td><code>f_corr[i]</code></td><td><code>{f_corr[j]}</code></td><td>像 Point-Cache 测试流 cache 一样，用损坏样本当 anchor，会有多准？</td></tr>
+        <tr><td>B: clean-as-anchor</td><td><code>f_corr[i]</code></td><td><code>{f_clean[j]}</code></td><td>如果 anchor pool 不被 corruption/test-stream 污染，会有多准？</td></tr>
+      </tbody>
+    </table>
+    <p>因为 query 一直是 <code>f_corr[i]</code>，唯一改变的是 anchor pool，所以 <code>B - A</code> 可以解释为 anchor source 的影响。</p>
+
+    <h2>9. 和当前论文主线的关系</h2>
+    <pre><code>如果 clean[i] 与 corrupted[i] 的 feature 仍很像，
+但 clean anchor pool 明显优于 corrupted anchor pool，
+那么问题更像是 anchor pollution，而不是 feature failure。</code></pre>
+    <p>这正是 scale 上观察到的结果。因此我们现在把 C1 从 raw ICP-CD 改成 conditional anchor switching。</p>
+  </div>
+</body>
+</html>

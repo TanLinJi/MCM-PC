@@ -1,7 +1,7 @@
 # D19 P4-fast-track 设计依据 (Design Rationale)
 
 > **版本**：v0.2（2026-05-11 19:50，加 §9.3 失败回填）
-> **状态**：**已终止**（D19 路径基于错误的 H1 假设；详见 §9.3 + `docs/decisions/D20_p1_post_mortem.md`）
+> **状态**：**已终止**（D19 路径基于错误的 H1 假设；详见 §9.3 + `docs/decisions/D22_p1_anchor_pollution_pivot.md`）
 > **作者**：用户 + Cascade
 > **目的**：把 D19 几何项（ICP-CD raw integration）的设计逻辑链从头到尾写清楚，
 >           避免「看到结果不对就改超参」的反射式工作流。
@@ -447,7 +447,7 @@ P1 探针（D20）独立测出：scale_2 上 PointBERT feature 几乎不漂（co
 - 实际上 feature 没漂、anchor 才漂
 - ICP-CD 把"几何对齐到错 anchor"翻译成"额外的 voting 证据"，**强化** anchor pollution
 
-详见 `@/root/autodl-tmp/MCM-PC/docs/decisions/D20_p1_post_mortem.md` §5。
+详见 `@/root/autodl-tmp/MCM-PC/docs/decisions/D22_p1_anchor_pollution_pivot.md` §5。
 
 #### 9.3.3 D19 路径终止
 
@@ -456,7 +456,7 @@ P1 探针（D20）独立测出：scale_2 上 PointBERT feature 几乎不漂（co
 1. **不再调 D19 超参**：α_g、β_g、threshold 都不能 fix 一个"假设错了"的方法。
 2. **不再实施 v0.1.4 双侧 gate**：§9.1.6 的触发条件未达成（§9.1.5 双假设都被 falsify），所以 v0.1.4 自动跳过。
 3. **保留 D19 实施代码** (`runners/model_with_hierarchical_icpcd.py`) 作历史参考，但不在 paper 主线推进。
-4. **方向迁移到 D20**：`docs/decisions/D20_p1_post_mortem.md` §6-§7 推荐的 D+E conditional anchor switching。
+4. **方向迁移到 D22**：`docs/decisions/D22_p1_anchor_pollution_pivot.md` §6-§7 推荐的 D+E conditional anchor switching。
 
 #### 9.3.4 教训
 

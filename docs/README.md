@@ -8,7 +8,7 @@
 |---|---|---|
 | `project/` | 项目管理、SOP、导航、里程碑追踪 | `NAVIGATION.md`, `MILESTONE_SOP.md`, `progress.txt` |
 | `proposals/` | 研究方案、可行性分析、方法设计草稿 | `MCP3D_full_proposal_v2.md` |
-| `decisions/` | 已锁定决策、设计理由、失败复盘 | `D19_design_rationale.md`, `D20_p1_post_mortem.md` |
+| `decisions/` | 已锁定决策、设计理由、失败复盘 | `D19_design_rationale.md`, `D22_p1_anchor_pollution_pivot.md` |
 | `concepts/` | 概念学习笔记和解释材料 | `00_overview.md`, `05_mcp_three_caches.html` |
 | `paper/` | 论文大纲和正文草稿 | `00_outline.md`, `01_introduction.md` |
 | `experiments/` | 可阅读的实验总结、里程碑报告 | `fig1a_summary.md`, `p1/P1_full_drift.md` |
@@ -25,14 +25,14 @@
 - 新方法决策、失败假设、复盘：放到 `decisions/`。
 - 新会话恢复信息、偏好、下一步计划：放到 `context/windsurf/`。
 - 新 HTML 报告：放到 `reports/`。
-- 新图表和 Mermaid / SVG 源文件：放到 `assets/figures/`。
+- 新图表和 SVG / Mermaid 源文件：放到 `assets/figures/`；如果用户需要直接浏览，优先另存一份自包含 HTML 到 `reports/`。
 - 新参考论文 PDF：放到 `references/papers/`。
 
 ## 当前推荐阅读顺序
 
 1. `project/NAVIGATION.md`
 2. `project/progress.txt`
-3. `decisions/D20_p1_post_mortem.md`
+3. `decisions/D22_p1_anchor_pollution_pivot.md`
 4. `experiments/fig1a_summary.md`
 5. `experiments/p1/P1_full_drift.md`
 6. `experiments/p1/P1_pollution_sim.md`

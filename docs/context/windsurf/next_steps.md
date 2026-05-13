@@ -1,7 +1,7 @@
 # 下一步任务（MCP-3D 项目）
 
-> 更新时间：2026-05-10 21:10
-> 当前阶段：W1 ✅ → W2 ✅（bar1+bar2+bar3 全部 commit + tag w2-tta-baseline）→ **W2.5 待开始**（探针 P3/P5/P1/P2）+ **§2 论文草稿启动**
+> 更新时间：2026-05-12
+> 当前阶段：W1 ✅ → W2 ✅ → W2.5 P1 ✅ → D19 raw ICP-CD 路线终止 → **D22 conditional anchor switching 待实现**
 
 ---
 
@@ -23,7 +23,47 @@
 
 ---
 
-## A 当前模式：D19 P4-fast-track ICP-CD scale-only oracle（进行中，2026-05-11）
+## A 当前模式：D22 conditional anchor switching（当前主线，2026-05-12）
+
+P1 已经改变论文主线：
+
+- 原假设：scale corruption 主要导致 feature failure，因此用 ICP-CD 几何距离修复。
+- P1 结论：scale 的 feature 基本可靠，主要问题是 anchor pollution。
+- 新方向：C1 改为 corruption-aware anchor source selection，即 conditional anchor switching。注意 clean anchor 是 oracle，labeled source prototype 只能作上界或 source-available ablation；strict source-free TTA 主方法要使用 text / vMF anchors 或高置信测试时证据。
+
+当前最重要的机制贡献：
+
+1. cache-based 3D TTA 会出现 anchor pollution。
+2. 不同 corruption family 处在不同 feature-drift regime。
+3. 方法不能全局使用一种 anchor，而要按样本可靠性切换 anchor 来源。
+
+立即执行：
+
+- [x] 将 P1 复盘编号从误用 D20 改为 D22。
+- [x] 在 `decisions.md` 记录 D22：终止 raw ICP-CD 主路径，转向 conditional anchor switching。
+- [x] 在 `key_findings.md` 追加 F6/F7：scale anchor pollution 与 jitter feature failure。
+- [x] 在 `docs/paper/01_introduction.md` 将 C1 改写为 anchor source selection。
+- [x] 新增 `docs/reports/2026-05-12_conditional_anchor_switching_flow.html` 架构图。
+- [x] 新增 `docs/reports/2026-05-12_modelnet_c_structure.html` 数据结构说明。
+- [ ] 后续 commit：`docs: record anchor pivot`
+
+下一步实现：
+
+1. 实现 `Point-Cache/runners/model_with_conditional_anchor.py`。
+2. smoke `scale_2` 50 samples：目标 ≥ hierarchical baseline。
+3. smoke `jitter_3` 50 samples：目标不明显低于 hierarchical baseline。
+4. 若 smoke 通过，再跑 scale_0..4；若仍通过，再跑 ModelNet-C 35 setting。
+
+需要补做的关键验证：
+
+1. 比较 entropy、max prototype cosine、top1-top2 prototype margin 哪个更能判断 feature 可靠性。
+2. 比较 clean oracle anchor、labeled source prototype、text/vMF anchor、高置信测试时 anchor 四种 stable anchor source；前两者只作诊断或上界，后两者才是 strict source-free 主线。
+3. 验证 gate 能否避开 jitter_2/3/4 的 static-anchor 负迁移。
+4. 后续扩展到 ScanObjectNN-C 检查 anchor pollution 是否泛化。
+
+---
+
+## A0 历史模式：D19 P4-fast-track ICP-CD scale-only oracle（已终止，2026-05-11）
 
 按 D19 锁定，跳过 P3/P5/P1 顺序，直接验证 ICP-CD 在 ModelNet-C scale_2 上能否拉回 ≥0pp。
 

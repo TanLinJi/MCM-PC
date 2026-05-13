@@ -10,7 +10,7 @@
 |---|---|---|---|---|
 | §1 Introduction | 动机 + 贡献概览 + diagnosis-driven framing | D17 落地 (现有) → P1/P2/P5 后回填数字 | 🟡 **v0.1 骨架草稿** | ~1000 |
 | §2 Related Work | 3D 测试时适配 / 零样本 / 缓存架构 | 已有 F1-F5 | 🟡 **v0.1 草稿** | ~1500 |
-| §3 Method | C1 ICP-CD / C2 vMF / C3 2×3 矩阵 | W3-W5 各自完成 | ⏳ blocked | ~3000 |
+| §3 Method | C1 conditional anchor switching / C2 vMF / C3 2×3 矩阵 | D22 + W3-W5 各自完成 | 🟡 **C1 v0.1 草稿** | ~3000 |
 | §4 Experiments | ModelNet-C / ScanObjectNN-C / 消融 | W6-W10 完成 | ⏳ blocked | ~2500 |
 | §5 Discussion | 失败案例 / 紧致度诊断 / 局限 | W11-W12 完成 | ⏳ blocked | ~1500 |
 | §6 Conclusion | 总结 | W12 完成 | ⏳ blocked | ~500 |
@@ -22,7 +22,8 @@ W2.5 P1 完成 → §1 motivation 段：填入 F3 (rotate +0.58pp) + P1 旋转�
 W2.5 P2 完成 → §1 motivation 段：填入 F1 (scale -0.40pp) + P2 紧致度相关性 r
 W2.5 P5 完成 → §2.1 末段：填入跨方法 scale 退化证据
 W3 完成     → §3.3 vMF 锚点
-W4 完成     → §3.4 ICP-CD 距离
+W2.5 D22 完成 → §3.2 conditional anchor switching
+W4 完成     → §3.4 几何信号是否作为 appendix / auxiliary
 W5 完成     → §3.5 2×3 矩阵
 W6 主实验   → §4.1 ModelNet-C 主结果
 W7 真实场景 → §4.2 ScanObjectNN-C
@@ -55,5 +56,6 @@ W15-16      → 投稿润色 (AAAI)
 ```
 
 ## 当前进度
-- §1 Introduction draft v0.1 骨架（2026-05-11 落盘）— 见 `01_introduction.md`，已落地 D17 *diagnosis-driven* 句作为 §1.2 主题陈述与 contribution 串联；数字部分等 P1/P2/P5 回填
+- §1 Introduction draft v0.1 骨架（2026-05-11 落盘）— 见 `01_introduction.md`，已落地 D17 *diagnosis-driven* 句作为 §1.2 主题陈述与 contribution 串联；P1 anchor pollution 已回填为 §1.2.2
 - §2 Related Work draft v0.1 (2026-05-10 落盘) — 见 `02_related_work.md`，新增对 §1.2 的呼应段
+- §3 Method C1 draft v0.1 (2026-05-12 落盘) — 见 `03_method.md`，新增 conditional anchor switching

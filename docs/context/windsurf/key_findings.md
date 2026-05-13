@@ -128,12 +128,52 @@
 
 ---
 
+## F6（2026-05-11）：scale 的主因是 anchor pollution，不是 feature failure ⭐
+
+**出处**
+- `docs/experiments/p1/P1_full_drift.md`
+- `docs/experiments/p1/P1_pollution_sim.md`
+- `docs/decisions/D22_p1_anchor_pollution_pivot.md`
+
+**关键数字**
+
+| setting | 数字 | 解读 |
+|---|---:|---|
+| scale_2 feature cos mean | 0.9306 | corrupted feature 仍接近 clean feature |
+| scale_2 class-consistent | 95.5% | feature space 里同类关系仍然很强 |
+| scale_2 corrupt anchor top-1 | 84.44% | 使用测试流 anchor 会被污染拖累 |
+| scale_2 clean anchor top-1 | 95.46% | 干净 anchor 显著更好 |
+| scale_2 clean - corrupt | +11.02pp | anchor source 是主要变量 |
+
+**结论**
+- F1 里"scale 是 ICP-CD 最有希望 attack point"的解释需要修正。
+- scale 仍然是重要 attack point，但 attack 的对象不是 feature failure，而是 anchor pollution。
+- 论文里应将该发现写成机制贡献：cache-based 3D TTA 的负适配可由测试流 anchor 污染触发。
+
+## F7（2026-05-11）：jitter 真正破坏 feature，stable anchor 不能全局使用
+
+**出处**
+- 同 F6。
+
+**关键数字**
+
+| setting | cos mean | class-consistent | clean-anchor Δ |
+|---|---:|---:|---:|
+| jitter_2 | 0.6976 | 59.5% | -24.84pp |
+| jitter_3 | 0.6201 | 30.8% | -51.18pp |
+| jitter_4 | 0.5671 | 15.5% | -62.68pp |
+
+**结论**
+- jitter 与 scale 属于不同机制区间：scale 主要是 anchor pollution，jitter 是 feature failure + anchor 选择风险。
+- 不能把 clean/source/stable anchor 作为全局方法；必须做 conditional anchor switching。
+- 下一步 smoke 必须同时包含 scale_2 和 jitter_3，前者验证收益，后者验证安全性。
+
 ## 待补充（占位）
 
-- F6：W2.5 P1 旋转鲁棒性测量结果 → 决定 C1 narrative 最终版
-- F7：W2.5 P2 紧致度-精度相关性 r 测量 → 决定 C2 narrative
-- F8：W2.5 P3 T4 显存测量 → 决定要不要降级 backbone
-- F9：W4 ICP 残差分布 → 定 ICP 失败阈值
+- F8：W2.5 P2 紧致度-精度相关性 r 测量 → 决定 C2 narrative
+- F9：W2.5 P3 T4 显存测量 → 决定要不要降级 backbone
+- F10：conditional anchor switching smoke → 验证 scale_2 收益与 jitter_3 安全性
+- F11：W4 ICP 残差分布（若保留 appendix 诊断）→ 定 ICP 失败阈值
 - F10：W7 主实验 MCP-3D vs Point-Cache 比较 → 论文 Table 4 主结果
 - ……
 
@@ -143,9 +183,10 @@
 
 | finding | 影响哪个 contribution | 影响哪个论文章节 |
 |---|---|---|
-| F1 (scale 反向) | C1 (ICP-CD) | §4 motivation, §6 Table 4 |
-| F2 (jitter 软肋) | C1 (ICP-CD) | §4 motivation |
+| F1 (scale 反向) | C1 触发点 | §4 motivation, §6 Table 4 |
+| F2 (jitter 软肋) | C1 安全门控 | §4 motivation |
 | F3 (rotate 无增益) | C1 narrative pivot | §3 framing |
 | F4 (dropout cliff) | 失败案例 | §5.2 limitations |
 | F5 (复现 -1pp) | 实验协议 | §6.1 reproduction note |
-
+| F6 (anchor pollution) | C1 anchor switching | §1.2, §3.4 |
+| F7 (jitter feature failure) | C1 abstention / safety | §3.4, §5 |

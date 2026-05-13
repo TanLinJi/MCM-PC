@@ -88,11 +88,11 @@
 1. **Affine-like corruption (scale / rotate / add\_\*)**：feature **几乎不漂** (cos > 0.93, class-consistency > 95%)，但 anchor pool 切换给出 **+10 ~ +13pp** 的纯增益。在 *scale* 这一最受关注的 family 上，**H1 被 falsify、H2 被 confirm**。这与 §1.2.1 entropy 单调性互补：entropy 切片告诉我们 baseline 错误集中在 high-ent，P1 进一步告诉我们这些 high-ent 错误的 root cause 是 anchor pollution 而非 feature failure。
 2. **Displacement corruption (jitter / 重度 dropout)**：feature 大幅退化 (cos < 0.70, class-consistency < 60%)，且 clean anchor 反而是 **有害** 的 (Δ ≤ −24.8pp)。在这些 corruption 上 H1+H2 同时成立 (H3)，且 anchor switching 不是有效解药。
 
-**对方法设计的影响**：§1.3 C1 原本以 "geometry-as-feature-backup" 为 framing；P1 数据表明这只在 displacement family 上 mechanistically reasonable。在 affine family 上，更直接的 remedy 是 **anchor source switching**（即把 1-NN 池从 stream 切到 training-set prototype），其 oracle 上界由本节 Δ pollution 列直接给出。最终方法将以 entropy gate（§1.2.1）+ corruption-aware anchor selector 共同构成。
+**对方法设计的影响**：§1.3 C1 原本以 "geometry-as-feature-backup" 为 framing；P1 数据表明这只在 displacement family 上 mechanistically reasonable。在 affine family 上，更直接的 remedy 是 **anchor source switching**：把 1-NN 池从易污染的 test stream 切到更稳定的 anchor source。clean reference 和 labeled source prototype 只提供 oracle / upper-bound 证据；strict source-free 主方法需要由 text / vMF anchor 或高置信测试时证据实现该 stable anchor source。
 
-**对应实验源**：`docs/decisions/D20_p1_post_mortem.md` §3-§7；原始数据 `docs/experiments/p1/P1_{scale,full}_drift.md` 与 `P1_pollution_sim.md`。
+**对应实验源**：`docs/decisions/D22_p1_anchor_pollution_pivot.md` §3-§7；原始数据 `docs/experiments/p1/P1_{scale,full}_drift.md` 与 `P1_pollution_sim.md`。
 
-**注意事项 (D16)**：表中 +Δ 是 *oracle simulation*（假设 test-time 可以访问 clean training set 的 mean prototype），现实方法的 end-to-end 增益将低于此上界；扩展到 ScanObjectNN-C / Sim-to-Real 是 W4 / W5 实验侧的工作。
+**注意事项 (D16 / protocol)**：表中 +Δ 是 *oracle simulation*，用于隔离 anchor pollution 机制；它不表示 strict TTA 方法可以访问 clean test samples。若使用 labeled source prototypes，也必须作为 source-available ablation 或 upper bound 单独报告。主方法在 strict source-free TTA 协议下应使用 text / vMF anchors 或高置信测试时证据构造 stable anchor source。
 
 [*figure placeholder F-prelim-2*]: scatter — x = `cos(f_clean, f_corr)`, y = pollution Δ；按 corruption family 着色；W4 主实验前用 `P1_*.json` 中 per-sample 数据出图。
 
@@ -102,8 +102,8 @@
 
 我们的贡献既包括方法模块，也包括方法之上的 *diagnostic framing*：
 
-- **C1（核心方法）：ICP-CD 几何距离作为 feature distance 的互补证据。**  
-  当 *feature distance failure probe* (P1) 显示 feature 在某些 corruption 下局部失灵时，我们以 PCA 主轴预对齐 + Iterative Closest Point (ICP) 精配 + Chamfer Distance (CD) 作为正交几何信号。为防止「形状相似异类」误伤，C1 设计了三层安全门控：跨类 ROC/AUC 检查、CD margin gating、以及与 text logits / feature cache / boundary calibration 的多源一致性融合 (本文 §3.4)。
+- **C1（核心方法）：corruption-aware anchor source selection。**  
+  P1 诊断显示，ModelNet-C scale / rotate / add\_\* 等 affine-like corruption 下的主要瓶颈不是 feature failure，而是 test-stream anchor pollution；相反，jitter / heavy dropout 下 feature 本身会显著漂移，盲目使用 clean/source anchor 会造成严重负迁移。因此我们将 C1 从原先的 "geometry-as-feature-backup" 重构为 **conditional anchor switching**：根据样本可靠性在 stable anchor source、stream anchor 与 abstention 之间切换。clean anchor 与 labeled source prototype 只作为诊断或上界；strict source-free TTA 主方法使用 text / vMF anchors 或高置信测试时证据构造稳定锚点 (本文 §3.4)。
 
 - **C2（数学严谨化）：vMF 文本锚点。**  
   在理想单峰假设下，Point-Cache 的 `normalize(Σ_i t_i)` 与 vMF mean direction 的 MLE 等价；但它是一个无先验、无不确定性建模的点估计，对 prompt 噪声和多语义模式脆弱。我们以 von Mises-Fisher 分布的 Maximum a Posteriori (MAP) 估计构造文本锚点，引入 prompt concentration κ 与先验 anchor 的 Bayesian shrinkage，使锚点在 noisy / mixed prompt distributions 下更稳健 (本文 §3.3)。
@@ -146,7 +146,7 @@
 - [ ] **§1.2.1 ratio table 扩展到 7 corruption × 5 severity** (W4 主实验后)，把 preliminary 提升为 supporting evidence
 - [ ] **§1.2.1 figure placeholder F-prelim-1**：W4 后用 matplotlib 出图
 - [ ] **§1.2.2 figure placeholder F-prelim-2**：用 `Point-Cache/reports/P1_*.json` per-sample 数据出 cos vs Δ-pollution 散点图
-- [ ] **§1.3 C1 reframe**：基于 §1.2.2 数据，把 C1 从 "geometry-as-feature-backup" 重新表述为 "corruption-aware anchor source selection"（待 D20 D+E conditional 实验完成后回填，详见 `docs/decisions/D20_p1_post_mortem.md` §6-§7）
+- [x] **§1.3 C1 reframe**：基于 §1.2.2 数据，把 C1 从 "geometry-as-feature-backup" 重新表述为 "corruption-aware anchor source selection"（D22；详见 `docs/decisions/D22_p1_anchor_pollution_pivot.md` §6-§7）
 - [ ] W4 oracle 完成后回填 1.4 的预览数字与三档判定
 - [ ] 与 §2 Related Work / §3 Method / §4 Experiments 的术语对齐 (anchor / cache cell / corruption family / negative adaptation)
 - [ ] 7 处 [需补 ref] 引用补全

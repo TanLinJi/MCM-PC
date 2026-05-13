@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conditional Anchor Switching 流程图</title>
+  <style>
+    :root {
+      --bg: #070b12;
+      --panel: #111a2b;
+      --panel-2: #17243b;
+      --ink: #e7edf7;
+      --muted: #9aa8bd;
+      --line: #27354d;
+      --blue: #60a5fa;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #fb7185;
+      --violet: #a78bfa;
+      --cyan: #22d3ee;
+      --shadow: 0 24px 80px rgba(0,0,0,.38);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, #070b12 0%, #0a1020 50%, #070b12 100%);
+      color: var(--ink);
+    }
+    .page { max-width: 1280px; margin: 0 auto; padding: 28px 18px 52px; }
+    header, .canvas, .card, table {
+      background: rgba(17,26,43,.96);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    header { padding: 24px; margin-bottom: 16px; background: linear-gradient(135deg, rgba(17,26,43,.98), rgba(22,34,56,.92)); }
+    h1 { margin: 0 0 8px; font-size: 32px; line-height: 1.18; letter-spacing: 0; }
+    h2 { margin: 26px 0 12px; font-size: 20px; color: #f8fbff; }
+    p { line-height: 1.66; margin: 8px 0; color: #d6deea; }
+    code { background: #050812; color: #dbeafe; padding: 2px 5px; border-radius: 5px; border: 1px solid #1f2a44; font-family: "JetBrains Mono", Consolas, monospace; }
+    .canvas { padding: 18px; overflow-x: auto; }
+    .flow { min-width: 1120px; display: grid; grid-template-columns: 170px 32px 170px 32px 210px 32px 260px 32px 170px; grid-template-rows: auto auto auto; gap: 12px 8px; align-items: center; }
+    .node {
+      min-height: 104px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: #0f1728;
+      padding: 13px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: 0 12px 34px rgba(0,0,0,.22);
+    }
+    .node b { display: block; margin-bottom: 5px; font-size: 15px; color: #f8fbff; }
+    .node span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .arrow { text-align: center; font-size: 24px; color: var(--cyan); }
+    .input { border-color: var(--blue); }
+    .encoder { border-color: var(--violet); }
+    .score { border-color: var(--amber); }
+    .selector { border-color: #dbeafe; background: #121d31; }
+    .static { border-color: var(--green); }
+    .stream { border-color: var(--blue); }
+    .abstain { border-color: var(--red); }
+    .fusion { border-color: var(--violet); }
+    .branch { grid-column: 7; display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .legend { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+    .card { padding: 15px; box-shadow: 0 12px 34px rgba(0,0,0,.2); }
+    .card strong { color: var(--cyan); }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; margin-bottom: 18px; box-shadow: 0 12px 34px rgba(0,0,0,.2); }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: #17243b; color: #dbeafe; font-size: 13px; }
+    td { color: #d6deea; }
+    tr:last-child td { border-bottom: 0; }
+    tr:hover td { background: rgba(96,165,250,.06); }
+    @media (max-width: 900px) {
+      .legend { grid-template-columns: 1fr; }
+      .page { padding: 18px 12px 36px; }
+      h1 { font-size: 26px; }
+      table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Conditional Anchor Switching 整体流程图</h1>
+      <p><strong>中文名</strong>：有条件的锚点来源切换。目标是在 scale 这类 feature 仍可靠但 cache anchor 容易污染的场景中使用 stable anchor source，同时在 jitter 这类 feature 已明显漂移的场景中避免 clean/source anchor 造成负迁移。clean anchor 是 oracle，labeled source prototype 只能作上界；strict source-free TTA 主线应使用 text / vMF anchors 或高置信测试时证据。</p>
+    </header>
+
+    <section class="canvas">
+      <div class="flow">
+        <div class="node input" style="grid-column:1; grid-row:2;"><b>Corrupted point cloud</b><span>测试时输入的损坏点云，例如 scale_2 或 jitter_3。</span></div>
+        <div class="arrow" style="grid-column:2; grid-row:2;">→</div>
+        <div class="node encoder" style="grid-column:3; grid-row:2;"><b>3D encoder</b><span>OpenShape / PointBERT，把点云编码成 query feature。</span></div>
+        <div class="arrow" style="grid-column:4; grid-row:2;">→</div>
+        <div class="node score" style="grid-column:5; grid-row:2;"><b>Reliability estimator</b><span>估计当前 feature 是否可靠。候选信号：entropy、max prototype cosine、top1-top2 margin。</span></div>
+        <div class="arrow" style="grid-column:6; grid-row:2;">→</div>
+        <div class="node selector" style="grid-column:7; grid-row:2;"><b>Anchor source selector</b><span>根据可靠性选择锚点来源，而不是固定使用一种 cache。</span></div>
+        <div class="arrow" style="grid-column:8; grid-row:2;">→</div>
+        <div class="node fusion" style="grid-column:9; grid-row:2;"><b>Final logits</b><span>融合 text logits 与被选中的 anchor/cache evidence，输出预测。</span></div>
+        <div class="branch" style="grid-row:1 / span 3;">
+          <div class="node static"><b>Reliable → stable anchor source</b><span>feature 接近稳定类别锚点。strict source-free 主线使用 text / vMF anchor 或高置信测试时锚点。</span></div>
+          <div class="node stream"><b>Uncertain → stream anchor</b><span>中间区域暂时保留 Point-Cache 原始测试流 cache，避免过早切换。</span></div>
+          <div class="node abstain"><b>Unreliable → abstention</b><span>feature 已明显漂移时，跳过 cache evidence，回退到 text logits 或 baseline-safe 输出。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <h2>三个锚点选择是什么意思</h2>
+    <table>
+      <thead><tr><th>选择</th><th>中文解释</th><th>什么时候用</th><th>P1 证据</th></tr></thead>
+      <tbody>
+        <tr><td><code>stable anchor source</code></td><td>稳定锚点来源，不被低置信测试流连续污染。clean anchor 是 oracle；source prototype 是上界；text / vMF anchor 才是 strict source-free 主线。</td><td>query feature 仍可靠，接近某个稳定类别 anchor。</td><td>scale_2 clean oracle anchor 比 corrupted stream anchor 高 +11.02pp，说明稳定锚点有价值。</td></tr>
+        <tr><td><code>stream anchor</code></td><td>测试流锚点。Point-Cache 原本的 cache，用测试过程中见过的样本作为参照。</td><td>可靠性处于中间区间，stable anchor 未必安全，完全 abstain 又可能浪费可用信息。</td><td>jitter 中 stream statistics 有时比 clean anchor 安全。</td></tr>
+        <tr><td><code>abstention</code></td><td>弃权。不是不预测，而是不使用 cache/anchor 这条证据。</td><td>feature 明显不可靠，stable anchor 和 stream anchor 都可能放大错误。</td><td>jitter_3 clean anchor 比 corrupt anchor 低 -51.18pp，必须有安全出口。</td></tr>
+      </tbody>
+    </table>
+
+    <h2>为什么不是只用 entropy</h2>
+    <table>
+      <thead><tr><th>信号</th><th>含义</th><th>它回答的问题</th></tr></thead>
+      <tbody>
+        <tr><td><code>entropy</code></td><td>预测熵，模型输出分布的不确定性。</td><td>模型现在是否犹豫？</td></tr>
+        <tr><td><code>max prototype cosine</code></td><td>query feature 与最近训练类别 prototype 的余弦相似度。</td><td>feature 是否还在某个类别附近？</td></tr>
+        <tr><td><code>top1-top2 margin</code></td><td>最近类别 prototype 与第二近类别 prototype 的相似度差距。</td><td>最近类别是否足够明确？</td></tr>
+      </tbody>
+    </table>
+
+    <div class="legend">
+      <div class="card"><strong>scale regime</strong><p>feature 可靠，stream anchor 易污染。优先验证不被污染的 stable anchor source。</p></div>
+      <div class="card"><strong>jitter regime</strong><p>feature 明显漂移，clean/source anchor 可能有害。必须保留 abstention 安全出口。</p></div>
+      <div class="card"><strong>method goal</strong><p>不是设计一个永远生效的 anchor，而是设计一个能选择何时信哪类 anchor 的 selector。</p></div>
+    </div>
+  </div>
+</body>
+</html>

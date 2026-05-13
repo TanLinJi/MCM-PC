@@ -1,9 +1,10 @@
-# D20 P1 探针结果与后续路径选择
+# D22 P1 探针结果与后续路径选择
 
-> **版本**：v1.0（2026-05-11 19:40）
+> **版本**：v1.1（2026-05-12）
 > **状态**：P1 完整探针跑完，基于数据作方向选择
 > **作者**：用户 + Cascade
 > **前置**：D17（anchor pollution 三假设框架）、D19（ICP-CD fast-track 失败）、paper §1.2.1（preliminary observation 初稿）
+> **编号说明**：原文件名误用 D20；D20 已用于"双卡并行规则"，D21 已用于 D19 几何超参收敛。本文正式编号改为 D22。
 
 ---
 
@@ -259,7 +260,7 @@ P1 数据给出以下 evidence：
 本轮（2026-05-11）剩余：
 - [x] commit P1 probe code + reports + logs + .gitignore 修复
 - [x] commit D20 doc + §9.3 of D19 retro + paper §1.2.1 补充
-- [ ] 写 `docs/decisions.md` 的 D20 一条：明确废弃 ICP-CD 路径、采纳 D+E conditional
+- [ ] 写 `docs/context/windsurf/decisions.md` 的 D22 一条：明确废弃 raw ICP-CD 主路径、采纳 D+E conditional anchor switching
 
 下一轮（待用户批准后）：
 1. 实现 `runners/model_with_conditional_anchor.py`：hier_baseline + proto-based anchor switching.

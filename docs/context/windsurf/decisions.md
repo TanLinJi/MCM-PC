@@ -280,12 +280,46 @@ Effectiveness of HTML"（PDF: /root/autodl-tmp/使用说明.pdf）。
 - §4 experiments：scale 列是诊断切片，不是现实世界类别。
 ```
 
-## D21：D19 几何项超参数收敛（OPEN，2026-05-11 12:05）
+## D22：P1 anchor pollution pivot（已锁定，2026-05-12）
+
+```
+触发：
+P1 feature drift probe 与 anchor pollution simulation 跑完后，发现 D19 的 raw ICP-CD
+路线基于错误的 H1 假设。
+
+术语：
+- anchor pollution：测试流 cache 中的 anchor 被错误预测污染，后续样本参考这些 anchor 时会放大错误。
+- stable anchor source：不会被低置信测试流连续覆盖的稳定锚点来源。strict source-free TTA 主方法应来自 text / vMF anchors 或高置信测试时证据；clean test anchors 和 labeled source prototypes 只能作为诊断或上界。
+- conditional anchor switching：根据当前样本可靠性，在 stable anchor source、stream anchor、abstention 之间切换。
+
+关键证据：
+- scale_2: cos(f_clean, f_scale)=0.9306，class-consistent=95.5%，说明 feature 没有严重失效。
+- scale_2 anchor simulation: corrupt anchor 84.44%，clean anchor 95.46%，Δ=+11.02pp。
+- jitter_3 anchor simulation: corrupt anchor 81.93%，clean anchor 30.75%，Δ=-51.18pp。
+
+决策：
+- 终止 raw ICP-CD 作为主预测修复路径；D19 保留为失败复盘和审稿防线材料。
+- C1 从 "geometry-as-feature-backup" 改写为 "corruption-aware anchor source selection"。
+- 明确协议边界：clean anchor 是 oracle；labeled source prototype 是 source-available ablation；strict source-free TTA 主线不能依赖干净测试样本或带标签源训练样本。
+- 下一步实现最小版 conditional anchor runner，先验证 scale_2 不低于 hierarchical baseline，jitter_3 不明显倒退。
+
+落点：
+- 复盘：docs/decisions/D22_p1_anchor_pollution_pivot.md
+- 论文：docs/paper/01_introduction.md §1.2.2 + §1.3
+- 计划：docs/context/windsurf/next_steps.md
+- 架构图：docs/reports/2026-05-12_conditional_anchor_switching_flow.html
+```
+
+## D21：D19 几何项超参数收敛（已作废，2026-05-12）
 
 ```
 触发：
 用户在 STAGE=smoke C 计划运行期间提问 "gating 阈值是不是超参，我们是不是引入了
 许多超参"。
+
+状态更新（2026-05-12）：
+D22 已终止 raw ICP-CD 主路径，因此本条不再作为近期任务推进。若未来在 appendix
+保留 ICP-CD 诊断实验，可复用本条作为 sensitivity analysis 的备忘。
 
 现状盘点 (D19 v0.1.2 / C plan)：
   D19 引入的 flags 共 7 个，其中 4 个是核心可调超参：

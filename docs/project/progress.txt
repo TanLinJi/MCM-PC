@@ -289,3 +289,19 @@ Decision (D9 upgrade trigger check): bar 3 delta -1.32pp same direction as bar 1
 and bar 2 (-0.98). Systematic -1pp bias confirmed; NOT debugged. Proceeding to W2.5.
 
 W2 milestone closure: bar 1 + bar 2 + bar 3 all reproduced. RISK_GATE R1 PASSED.
+
+--------------------------------------------------------------------------------
+[2026-05-12] D22 pivot: anchor pollution replaces raw ICP-CD as C1 main route
+--------------------------------------------------------------------------------
+P1 completed and changed the method direction.
+
+Key correction:
+  - scale negative adaptation is not primarily feature failure.
+  - scale_2 feature remains reliable: cos mean 0.9306, class-consistent 95.5%.
+  - anchor source is decisive: scale_2 corrupt anchor 84.44% vs clean anchor 95.46% (+11.02pp).
+  - jitter is the opposite regime: jitter_3 clean anchor drops to 30.75% vs corrupt anchor 81.93% (-51.18pp).
+
+Decision:
+  - D19 raw ICP-CD main route terminated.
+  - C1 reframed as conditional anchor switching / corruption-aware anchor source selection.
+  - Next implementation target: model_with_conditional_anchor.py with smoke tests on scale_2 and jitter_3.

@@ -34,6 +34,8 @@ W1 ✅ → W2 ✅（bar1+2+3 已 commit + tag `w2-tta-baseline`）→ **W2.5 ⏸
 |---|---|---|
 | [`session_2026-05-10.md`](./session_2026-05-10.md) | 05-09 晚 → 05-10 早 | W1 收尾 + smoke test 71.47% + wandb offline + Point-Cache 代码讲解 |
 | [`session_2026-05-10_evening.md`](./session_2026-05-10_evening.md) ⭐ | 05-10 19:30-22:00 | **论文复习启动 + 故事/鸟瞰 + 5 题答案 + SOP v1.0 锁定** |
+| [`session_2026-05-12.md`](./session_2026-05-12.md) ⭐ | 05-12 | **D22 anchor pollution pivot + conditional anchor switching 解释与架构图** |
+| [`session_2026-05-13.md`](./session_2026-05-13.md) ⭐ | 05-13 | **逐条回答规则 + HTML 暗黑主题 + anchor pollution 证据位置纠正** |
 
 （2026-05-09 之前会话摘要已并入 `chat_summary.md` 阶段 1-3）
 
